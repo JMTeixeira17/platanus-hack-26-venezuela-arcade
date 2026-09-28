@@ -1,5 +1,5 @@
 {
-  "game_name": "Platanus Hack: Caracas Brick Breaker",
-  "description": "Batalla campal por romper la mayor cantidad de ladrillos",
-  "player_mode": "two_player"
+  "game_name": "Moto Piruetas: Hora Pico en la Fajardo",
+  "description": "Eres motorizado en la Francisco Fajardo en hora pico. Cuélate por los canalitos, haz caballito, vuela desde las grúas, esquiva huecos, vendedores y al fiscal, y llega a la oficina antes de que te boten. Si te pegas al borde, caes al Guaire.",
+  "player_mode": "single_player"
 }

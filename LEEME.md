@@ -1,0 +1,56 @@
+# Moto Piruetas: Hora Pico en la Fajardo
+
+Juego para el Arcade Challenge de Platanus Hack 26 Caracas. Un jugador, Phaser 3, todo dibujado y sonado con código.
+
+- `game.js`: 43 KB minificado (el límite es 50 KB). Pasa `npm run check-restrictions`.
+- `metadata.json`: nombre, descripción y `single_player`.
+- `cover.png`: 800x600, generado con el mismo motor del juego.
+
+El resto de los archivos son los del repo oficial de inicio, sin cambios.
+
+## Probarlo en tu máquina
+
+```bash
+npm install
+npm run dev
+```
+
+Abre `localhost:3001`. El panel de desarrollo muestra el juego y revisa las restricciones en vivo.
+
+## Enviarlo
+
+1. Haz fork de `platanus-hack/platanus-hack-26-venezuela-arcade` en GitHub.
+2. Reemplaza `game.js`, `metadata.json` y `cover.png` con los de esta carpeta.
+3. Haz commit y push.
+4. Usa el botón **Submit** del panel de desarrollo.
+
+Fecha límite: 21 de octubre de 2026, 23:59 hora de Caracas.
+
+## Controles
+
+| Máquina | Teclado (pruebas) | Acción |
+|---|---|---|
+| Joystick arriba / abajo | W / S | Cambiar de carril |
+| Joystick derecha / izquierda | D / A | Acelerar / frenar |
+| Botón 1 (mantener) | U | Caballito |
+| Botón 2 | I | Corneta |
+| En el aire: izquierda / derecha | A / D | Girar (hay que caer derecho) |
+| Start | Enter | Empezar |
+
+Funciona con cualquiera de los dos joysticks de la máquina. No se tocó `CABINET_KEYS`.
+
+## Qué hay en el juego
+
+- **Meta:** 5 motorizados con velocidad, manejo, equilibrio y un especial propio. Hay que ir de Petare a la oficina antes de que se acabe el tiempo; cada tramo suma segundos. Si llegas, empieza el día siguiente, con más tráfico y menos tiempo.
+- **Puntos:** rasantes en combo (con insultos), caballito, piruetas desde las grúas, empanadas.
+- **Peligros:** alcantarillas con rama que solo pasas en caballito, camioneticas que frenan con "¡PARADA!", baches, motorizados que te empujan tocando corneta, el hombrillo que te tira al Guaire, colas con vendedores que no puedes chocar y el fiscal, que aparece cuando se llena la sirena.
+- **Power-ups:** estampita de José Gregorio (invencible), anís (turbo, pero curdo), guayoyo (+5 segundos), casco (aguanta un choque) y empanada.
+- **Récords:** ranking de 5 con iniciales, guardado con `platanusArcadeStorage`.
+- **Pantalla de título:** con modo demo jugado por la IA.
+
+## Ajustes rápidos en `game.js`
+
+- `TRIP`: largo del recorrido en píxeles (7200).
+- Tiempo inicial: `time: day > 1 ? 30 : 34` en `newRun`.
+- Segundos por tramo: `S.time += 12`.
+- Frecuencia de eventos: el objeto `S.nx` y la función `director`.

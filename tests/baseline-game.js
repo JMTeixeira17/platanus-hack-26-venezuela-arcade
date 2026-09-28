@@ -52,49 +52,6 @@ const I = {
   pA: () => pr('P1_1', 'P1_4', 'P2_1', 'P2_4'), pB: () => pr('P1_2', 'P1_5', 'P2_2', 'P2_5'), pS: () => pr('START1', 'START2'),
 };
 
-/* Controles tactiles para telefonos: salen con puntero tactil o al primer toque y
-   escriben los mismos codigos de la maquina. Mitad izquierda: joystick flotante;
-   mitad derecha: boton 1 abajo, boton 2 arriba. */
-let TUI = null;
-const TCH = {};
-const setHeld = (c, on) => { if (on && !held[c]) pressed[c] = true; held[c] = on; };
-const pressTxt = () => TUI ? 'TOCA EL BOTON 1' : 'PRESIONA START';
-function touchUI() {
-  const d = document, css = 'position:fixed;box-sizing:border-box;pointer-events:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font:bold 8vmin monospace;color:#fff;border:.6vmin solid rgba(255,255,255,.5);background:rgba(255,255,255,.1);';
-  const mk = (s, t, p) => { const e = d.createElement('div'); e.style.cssText = css + s; e.textContent = t || ''; (p || d.body).appendChild(e); return e; };
-  d.body.style.cssText += ';touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none';
-  const st = d.createElement('style'); st.textContent = '@media (orientation:landscape){#mp-rot{display:none!important}}'; d.head.appendChild(st);
-  mk('border:0;border-radius:0;background:none;top:2vmin;left:0;right:0;font-size:4vmin;color:#e6ff00', 'GIRA EL TELEFONO PARA VER MEJOR').id = 'mp-rot';
-  const base = mk('width:30vmin;height:30vmin;left:5vmin;bottom:6vmin'), knob = mk('position:absolute;width:13vmin;height:13vmin;left:7.9vmin;top:7.9vmin;background:rgba(230,255,0,.4)', '', base);
-  const b1 = mk('width:22vmin;height:22vmin;right:6vmin;bottom:7vmin', '1'), b2 = mk('width:16vmin;height:16vmin;right:9vmin;bottom:36vmin', '2');
-  return (jo, dx, dy, vm, on) => {
-    const k = Math.min(1, 9 * vm / (Math.hypot(dx, dy) || 1)), bs = base.style;
-    bs.left = jo ? jo.ox - 15 * vm + 'px' : '5vmin'; bs.top = jo ? jo.oy - 15 * vm + 'px' : 'auto'; bs.bottom = jo ? 'auto' : '6vmin';
-    knob.style.transform = 'translate(' + dx * k + 'px,' + dy * k + 'px)';
-    b1.style.background = on.P1_1 ? 'rgba(230,255,0,.45)' : 'rgba(255,255,255,.1)'; b2.style.background = on.P1_2 ? 'rgba(230,255,0,.45)' : 'rgba(255,255,255,.1)';
-  };
-}
-function onTouch(e) {
-  if (e.cancelable) e.preventDefault();
-  unlockAudio();
-  if (!TUI) TUI = touchUI();
-  const w = window.innerWidth, h = window.innerHeight, vm = Math.min(w, h) / 100, ts = e.changedTouches, end = e.type === 'touchend' || e.type === 'touchcancel';
-  for (let i = 0; i < ts.length; i++) {
-    const t = ts[i], id = t.identifier, x = t.clientX, y = t.clientY;
-    if (e.type === 'touchstart') { const L = x < w / 2; if (L && Object.values(TCH).some(o => o.j)) continue; TCH[id] = { j: L, ox: x, oy: y }; }
-    const o = TCH[id]; if (!o) continue;
-    if (end) { delete TCH[id]; continue; }
-    o.x = x; o.y = y; o.b = y < h - 31 * vm ? 'P1_2' : 'P1_1';
-  }
-  let jo = null; const on = {};
-  for (const k in TCH) { const o = TCH[k]; if (o.j) jo = o; else on[o.b] = 1; }
-  const dx = jo ? jo.x - jo.ox : 0, dy = jo ? jo.y - jo.oy : 0, len = Math.hypot(dx, dy), s = len < 5 * vm ? 1e9 : .4 * len;
-  setHeld('P1_U', dy < -s); setHeld('P1_D', dy > s); setHeld('P1_L', dx < -s); setHeld('P1_R', dx > s);
-  setHeld('P1_1', !!on.P1_1); setHeld('P1_2', !!on.P1_2);
-  TUI(jo, dx, dy, vm, on);
-}
-for (const n of ['touchstart', 'touchmove', 'touchend', 'touchcancel']) window.addEventListener(n, onTouch, { passive: false, capture: true });
-
 /* ---------- utilidades ---------- */
 const RO = Math.round, FL = Math.floor, SN = Math.sin, AB = Math.abs, MN = Math.min, MXX = Math.max;
 let seed = 1;
@@ -262,7 +219,7 @@ const ENDS = {
   preso: ['PRESO!','TE AGARRO EL FISCAL'],
   tarde: ['TE BOTARON','LLEGASTE TARDE AL TRABAJO'],
 };
-const occ = v => v.wide ? [v.lane * 2 - 1, v.lane * 2, v.lane * 2 + 1] : [...new Set([v.lane * 2, nearestPos(v.gy)])];
+const occ = v => v.wide ? [v.lane * 2 - 1, v.lane * 2, v.lane * 2 + 1] : [v.lane * 2];
 function fl(S, x, y, s, col) { S.floats.push({ x, y, s, col, t: 0 }); }
 function banner(S, s, col, dur) { S.banners = [{ s, col, t: 0, dur: dur || 2 }]; }
 
@@ -459,13 +416,12 @@ function simStep(S, dt) {
   if (!m.crashed) {
     S.dAcc += m.v * dt * (m.ri === 0 ? 1.5 : 1) / 10; while (S.dAcc >= 1) { S.dAcc--; S.score++; }
     if (!m.air) for (const v of S.veh) {
-      if (v.x >= m.x + 10 || v.x + v.L <= m.x - 10) continue;
-      /* El choque sigue al dibujo (v.gy): los anchos tapan el canalito de atras, nunca el de adelante. */
-      const dy = m.y - v.gy, lo = v.wide ? -22 : -7.5;
-      if (v.kind === 'grua' && !v.used && v.x > m.x - 4 && AB(dy) < 22) { launch(S, v); break; }
-      if (dy <= lo || dy >= 7.5) { if (dy > lo - 16 && dy < 23.5) v.adj = true; continue; }
-      if (m.inv > 0 || v.ghosted) { if (!v.ghosted) { v.ghosted = true; if (m.inv > 2) { fl(S, MX, m.y - 36, 'NADA TE TOCA!', '#e6ff00'); S.siren = MN(1, S.siren + .15); } v.bubble = '#@%!'; v.bubbleT = 1.4; } }
-      else { crash(S, 'choque', v); break; }
+      if (!occ(v).includes(ep)) { if (AB(ep - v.lane * 2) === (v.wide ? 2 : 1) && v.x < m.x + 10 && v.x + v.L > m.x - 10) v.adj = true; continue; }
+      if (v.x < m.x + 10 && v.x + v.L > m.x - 10) {
+        if (v.kind === 'grua' && !v.used && v.x > m.x - 4) { launch(S, v); break; }
+        if (m.inv > 0 || v.ghosted) { if (!v.ghosted) { v.ghosted = true; if (m.inv > 2) { fl(S, MX, m.y - 36, 'NADA TE TOCA!', '#e6ff00'); S.siren = MN(1, S.siren + .15); } v.bubble = '#@%!'; v.bubbleT = 1.4; } }
+        else { crash(S, 'choque', v); break; }
+      }
     }
     for (const v of S.veh) if (!v.passed && v.x + v.L < m.x - 10) {
       v.passed = true;
@@ -712,7 +668,7 @@ function drawTitle() {
     txt('CONTROLES', 160, 92, '#e6ff00', 1, 'c', null);
     ['JOYSTICK ARRIBA / ABAJO: CARRIL', 'DERECHA: ACELERA   IZQUIERDA: FRENA', 'BOTON 1 (MANTENER): CABALLITO', 'BOTON 2: CORNETA', 'EN EL AIRE: IZQ / DER PARA GIRAR', 'CAE DERECHO O TE MATAS', 'OJO: EL GUAIRE, LOS HUECOS', 'Y LOS VENDEDORES DE LA COLA'].forEach((s, i) => txt(s, 160, 104 + i * 10, i > 5 ? '#f28aa0' : '#f2f2f2', 1, 'c', null));
   }
-  if (FL(MT * 2.5) % 2 === 0) txt(pressTxt(), 160, 204, '#f2f2f2', 2, 'c');
+  if (FL(MT * 2.5) % 2 === 0) txt('PRESIONA START', 160, 204, '#f2f2f2', 2, 'c');
   txt('PLATANUS HACK 26 CARACAS', 160, 228, '#8e8e88', 1, 'c', null);
 }
 function drawSelect() {
@@ -732,7 +688,7 @@ function drawOver(S) {
   const row = (l, v, y, col) => { txt(l, 90, y, '#8e8e88', 1, 'l', null); txt(v, 230, y, col, 1, 'r', null); };
   row('PUNTOS', String(S.score).padStart(6, '0'), 80, '#e6ff00'); row('RECORRIDO', RO(clamp(S.m.x / TRIP, 0, 1) * 100) + '%', 92, '#f2f2f2'); row('DIA', String(S.day), 104, '#f2f2f2'); row('RECORD', String(RANK[0].s).padStart(6, '0'), 116, '#f2f2f2');
   X.drawImage(S.m.R.img, 134, 132, 52, 42);
-  if (MT > 1 && FL(MT * 2.5) % 2 === 0) txt(pressTxt(), 160, 196, '#e6ff00', 2, 'c');
+  if (MT > 1 && FL(MT * 2.5) % 2 === 0) txt('PRESIONA START', 160, 196, '#e6ff00', 2, 'c');
 }
 function drawName() {
   F('rgba(12,7,20,.92)'); Q(0, 12, W, H - 12);
@@ -796,7 +752,6 @@ function create() {
   this.add.image(0, 0, 'scr').setOrigin(0, 0).setScale(GAME_WIDTH / W);
   loadRank();
   ATT = newRun(0, true, 1, 0);
-  if (!TUI && window.matchMedia && window.matchMedia('(pointer: coarse)').matches) TUI = touchUI();
 }
 function update(time, delta) {
   ACC += MN(.1, (delta || 16) / 1000);
