@@ -4,7 +4,7 @@ Juego para el Arcade Challenge de Platanus Hack 26 Caracas. Un jugador, Phaser 3
 
 - `game.js`: 49.2 KB minificado (el límite es 50 KB). Pasa `npm run check-restrictions`.
 - `metadata.json`: nombre, descripción y `single_player`.
-- `cover.png`: 800x600, generado con el mismo motor del juego.
+- `cover.png`: 800x600, pixel art hecho con los sprites y la fuente del juego. Se regenera con `node tools/make-cover.mjs` (necesita Google Chrome instalado).
 
 El resto de los archivos son los del repo oficial de inicio, sin cambios.
 
