@@ -30,6 +30,32 @@ function press(S, code, brake) {
 }
 const hasFloat = (S, s) => S.floats.some(f => f.s === s);
 
+/* ---------- pickups ---------- */
+function grab(kind, ai) { const S = scene(2, 50, ai); S.pick = [{ kind, pos: 2, x: S.m.x }]; step(S); return S; }
+/* Fake Web Audio: records every oscillator (frequency, type, start/stop, gain envelope). */
+function listen(fn) {
+  const osc = [], P = () => ({ value: 0, pts: [], setValueAtTime(v, t) { this.pts.push([v, t]); }, linearRampToValueAtTime(v, t) { this.pts.push([v, t]); }, exponentialRampToValueAtTime(v, t) { this.pts.push([v, t]); } });
+  G.setAC({ currentTime: 0, sampleRate: 8000, state: 'running', destination: {},
+    createOscillator() { const o = { type: 'sine', frequency: P(), connect(g) { o.g = g; }, start(t) { o.t0 = t; }, stop(t) { o.t1 = t; } }; osc.push(o); return o; },
+    createGain() { return { gain: P(), connect() {} }; },
+    createBuffer: (c, n) => ({ getChannelData: () => new Float32Array(n) }), createBufferSource: () => ({ connect() {}, start() {} }) });
+  try { fn(); } finally { G.setAC(null); }
+  return osc.map(o => ({ f: o.frequency.value || (o.frequency.pts[0] || [0])[0], type: o.type, t0: o.t0, t1: o.t1, peak: Math.max(o.g.gain.value, ...o.g.gain.pts.map(q => q[0])) }));
+}
+const near = (os, f, test) => os.some(o => Math.abs(o.f - f) < 1 && test(o));
+/* Fake canvas: returns every fillRect as "x,y,w,h,color". */
+function paint(S) {
+  const rects = []; let fs = '';
+  G.setX({ set fillStyle(v) { fs = v; }, get fillStyle() { return fs; }, set globalAlpha(v) {}, fillRect(x, y, w, h) { rects.push([x, y, w, h, fs].join()); }, drawImage() {}, save() {}, restore() {}, translate() {}, rotate() {} });
+  G.drawRun(S, false); return rects;
+}
+function extraRects(S) {
+  const b = S.bless; S.bless = 0; const base = paint(S); S.bless = b; const withB = paint(S), left = new Map();
+  for (const r of base) left.set(r, (left.get(r) || 0) + 1);
+  return withB.filter(r => { const n = left.get(r) || 0; if (n) { left.set(r, n - 1); return false; } return true; }).map(r => r.split(',').slice(0, 4).map(Number));
+}
+const ANIS = 'ANIS CARTUJO PARA GENTE DE LUJOO!!';
+
 /* ---------- fiscal ---------- */
 function copGiveUpTime() {
   const S = scene(2, 112); S.siren = 1; step(S); const c = S.cop; if (!c) return -1;
@@ -86,6 +112,30 @@ const cases = [
   ['COLA banner also tells how to squeeze', () => {
     const S = scene(2, 50); S.cola = { x0: S.m.x + 40, x1: S.m.x + 400 }; S.colaDone = false; S.colaB = false;
     step(S); return S.banners.some(b => b.s === 'COLA!') && hasFloat(S, 'FRENA PARA COLARTE');
+  }],
+  /* ---------- estampita ---------- */
+  ['estampita: invincibility, banner and the blessing timer', () => { const S = grab('estampita'); return S.m.inv > 5 && S.bless > 2.5 && S.banners.some(b => b.s === 'ESTAMPITA!'); }],
+  ['estampita: the old JOSE GREGORIO TE CUIDA float is gone', () => !hasFloat(grab('estampita'), 'JOSE GREGORIO TE CUIDA')],
+  ['estampita: blessing lasts about 3 s and decays to 0', () => { const S = grab('estampita'); step(S, 150); const mid = S.bless > 0; step(S, 60); return mid && S.bless === 0; }],
+  ['estampita: ghost and DIOS TE BENDIGA are drawn below the HUD, inside the screen', () => {
+    const S = grab('estampita'); let ex = [], ok = true;
+    for (let k = 0; k < 12; k++) { step(S, 13); const e = extraRects(S); ok = ok && e.length > 40; ex = ex.concat(e); }
+    return ok && ex.every(([x, y, w, h]) => y >= 12 && x >= 0 && x + w <= G.W && y + h <= 100);
+  }],
+  ['estampita: plays a soft F -> C major amen instead of the pick jingle', () => {
+    const os = listen(() => grab('estampita'));
+    const F = [174.6, 220, 261.6, 349.2].every(f => near(os, f, o => o.t0 < .1)), C = [130.8, 164.8, 196, 261.6].every(f => near(os, f, o => o.t0 > .5));
+    const end = Math.max(...os.map(o => o.t1));
+    return F && C && os.every(o => o.type !== 'square' && o.peak <= .03) && end > 1.5 && end < 2.6;
+  }],
+  ['estampita: the amen stays silent in the AI demo', () => listen(() => grab('estampita', true)).length === 0],
+  ['other pickups still play the pick jingle', () => near(listen(() => grab('empanada')), 523, o => o.type === 'square')],
+  /* ---------- anis ---------- */
+  ['anis: turbo, banner and the exact CARTUJO text', () => { const S = grab('anis'); return S.m.turbo > 3.9 && S.banners.some(b => b.s === 'ANIS!') && hasFloat(S, ANIS); }],
+  ['anis: CARTUJO text uses only font glyphs and fits in 0..320', () => {
+    const S = grab('anis'), f = S.floats.find(q => q.s === ANIS); if (!f) return false;
+    const w = G.tw(ANIS), x0 = Math.round(f.x - w / 2);
+    return [...ANIS].every(c => c === ' ' || G.FONT[c]) && x0 - 2 >= 0 && x0 + w + 2 <= G.W;
   }],
   ['leaving the ranking screen does not crash the next render (real browser froze here)', () => {
     const any = new Proxy(function () {}, { get: () => any, set: () => true, apply: () => any });

@@ -2,7 +2,7 @@
 
 Juego para el Arcade Challenge de Platanus Hack 26 Caracas. Un jugador, Phaser 3, todo dibujado y sonado con código.
 
-- `game.js`: 43 KB minificado (el límite es 50 KB). Pasa `npm run check-restrictions`.
+- `game.js`: 47 KB minificado (el límite es 50 KB). Pasa `npm run check-restrictions`.
 - `metadata.json`: nombre, descripción y `single_player`.
 - `cover.png`: 800x600, generado con el mismo motor del juego.
 
@@ -47,7 +47,7 @@ En el teléfono salen controles táctiles: joystick a la izquierda, botones 1 y 
 - **Meta:** 5 motorizados con velocidad, manejo, equilibrio y un especial propio. Hay que ir de Petare a la oficina antes de que se acabe el tiempo; cada tramo suma segundos. Si llegas, empieza el día siguiente, con más tráfico y menos tiempo.
 - **Puntos:** rasantes en combo (con insultos), caballito, piruetas desde las grúas, empanadas.
 - **Peligros:** alcantarillas con rama que solo pasas en caballito, camioneticas que frenan con "¡PARADA!", baches, motorizados que te empujan tocando corneta, el hombrillo que te tira al Guaire, colas con vendedores que no puedes chocar y el fiscal, que aparece cuando se llena la sirena. Se le escapa saltando desde una grúa, dejándole un carro en medio o aguantando 9 segundos hasta que se cansa.
-- **Power-ups:** estampita de José Gregorio (invencible), anís (turbo, pero curdo), guayoyo (+5 segundos), casco (aguanta un choque) y empanada.
+- **Power-ups:** estampita de José Gregorio (invencible, y se aparece a bendecirte con música de iglesia), Anís Cartujo (turbo, pero curdo), guayoyo (+5 segundos), casco (aguanta un choque) y empanada.
 - **Récords:** ranking de 5 con iniciales, guardado con `platanusArcadeStorage`.
 - **Pantalla de título:** con modo demo jugado por la IA.
 

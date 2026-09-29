@@ -233,11 +233,21 @@ function noise(d, v) {
     const s = AC.createBufferSource(), g = AC.createGain(); s.buffer = b; g.gain.value = v || .2; s.connect(g); g.connect(AC.destination); s.start();
   } catch (e) {}
 }
+/* Organo de iglesia: acorde sostenido (triangulo + octava en seno) que entra y sale suave */
+function organ(fs, d, dl) {
+  if (!AC) return;
+  try {
+    const t = AC.currentTime + dl, g = AC.createGain(), e = g.gain;
+    e.setValueAtTime(0, t); e.linearRampToValueAtTime(.012, t + .15); e.setValueAtTime(.012, t + d - .35); e.linearRampToValueAtTime(0, t + d); g.connect(AC.destination);
+    for (const f of fs) for (const k of [1, 2]) { const o = AC.createOscillator(); o.type = k > 1 ? 'sine' : 'triangle'; o.frequency.value = f * k; o.connect(g); o.start(t); o.stop(t + d + .05); }
+  } catch (e) {}
+}
 const SFX = {
   honk() { tone(392,.22,'square',.06); tone(494,.22,'square',.05); },
   horn() { tone(660,.1,'square',.04); tone(830,.12,'square',.04,0,.12); },
   ras() { tone(880,.06,'square',.035,1320); },
   pick() { [523,659,784,1047].forEach((f,i) => tone(f,.09,'square',.045,0,i*.06)); },
+  amen() { organ([174.6,220,261.6,349.2], 1, 0); organ([130.8,164.8,196,261.6], 1.2, .9); },
   crash() { noise(.5,.25); tone(220,.5,'sawtooth',.07,40); },
   splash() { noise(.8,.2); tone(300,.4,'sine',.05,80); },
   jump() { tone(260,.3,'square',.045,900); },
@@ -491,9 +501,9 @@ function simStep(S, dt) {
       else { m.v *= .78; S.shake = .25; fl(S, MX, m.y - 30, 'BACHE!', '#f2f2f2'); sfx(S, 'bump'); }
     }
     for (const pk of S.pick) {
-      if (pk.got || pk.pos !== ep || !(pk.x - 4 < m.x + 10 && pk.x + 5 > m.x - 10)) continue; pk.got = true; sfx(S, 'pick');
-      if (pk.kind === 'estampita') { m.inv = 5.5; banner(S, 'ESTAMPITA!', '#e6ff00', 1.5); fl(S, MX, m.y - 40, 'JOSE GREGORIO TE CUIDA', '#e6ff00'); }
-      else if (pk.kind === 'anis') { m.turbo = 4; m.drunkT = .6; banner(S, 'ANIS!', '#f2f2f2', 1.4); fl(S, MX, m.y - 40, 'TURBO... PERO CURDO', '#f2c56b'); }
+      if (pk.got || pk.pos !== ep || !(pk.x - 4 < m.x + 10 && pk.x + 5 > m.x - 10)) continue; pk.got = true; sfx(S, pk.kind === 'estampita' ? 'amen' : 'pick');
+      if (pk.kind === 'estampita') { m.inv = 5.5; S.bless = 3; banner(S, 'ESTAMPITA!', '#e6ff00', 1.5); }
+      else if (pk.kind === 'anis') { m.turbo = 4; m.drunkT = .6; banner(S, 'ANIS!', '#f2f2f2', 1.4); fl(S, MX, m.y - 48, 'ANIS CARTUJO PARA GENTE DE LUJOO!!', '#f2f2f2'); fl(S, MX, m.y - 38, 'TURBO... PERO CURDO', '#f2c56b'); }
       else if (pk.kind === 'guayoyo') { S.time += 5; banner(S, 'GUAYOYO!', '#f2c56b', 1.2); fl(S, MX, m.y - 40, '+5 SEG', '#3fd0e0'); }
       else if (pk.kind === 'casco') { m.casco = true; fl(S, MX, m.y - 40, 'CASCO! AGUANTA UN CHOQUE', '#f2f2f2'); }
       else { S.score += 300; fl(S, MX, m.y - 40, 'EMPANADA +300', '#f2c56b'); }
@@ -548,7 +558,7 @@ function simStep(S, dt) {
   }
   if (m.turbo > 0 && !m.crashed && rnd() < .5) S.parts.push({ x: m.x - 14, y: m.y - 4 - m.h, vx: -60, vy: 0, l: .25, c: pick(['#ff9a2a','#ffd23a']) });
   for (const q of S.parts) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 120 * dt; q.l -= dt; } S.parts = S.parts.filter(q => q.l > 0);
-  if (m.inv > 0) m.inv -= dt; if (m.turbo > 0) m.turbo -= dt;
+  if (m.inv > 0) m.inv -= dt; if (m.turbo > 0) m.turbo -= dt; if (S.bless > 0) S.bless = MXX(0, S.bless - dt);
   if (!S.cop && S.siren >= 1 && !m.crashed && !S.arrived) { S.cop = { x: m.x - 160, y: m.y, tpos: nearestPos(m.y), v: m.v + 21, lost: false, t: 0, catchT: 0, say: -9, bubbleT: 0 }; banner(S, 'EL FISCAL!', '#5a9bff', 1.6); }
   const c = S.cop;
   if (c) {
@@ -640,6 +650,15 @@ function drawScenery(S) {
   if (S.fish < 0) { const k = -S.fish / 1.2, fx = 250 - RO(k * 60), fy = RO(214 - SN(k * Math.PI) * 16); F('#2f7a3a');Q(fx,fy,12,3);Q(fx-4,fy+1,4,1);Q(fx+12,fy-1,2,2);Q(fx+12,fy+2,2,2);F('#e6ff00');Q(fx+2,fy,1,1); }
   if (S.edgeT > 0 && !m.crashed && FL(S.t * 8) % 2 === 0) { F('rgba(255,90,58,.4)'); Q(0, 200, W, 2); }
 }
+/* Estampita: Jose Gregorio (sombrero, bigote, flux) se aparece palido en la esquina y bendice */
+function drawBless(S) {
+  const b = S.bless, x = 300, y = 20 + RO(SN(S.t * 3) * 2), a = clamp(MN((3 - b) * 2, b * 1.5), 0, 1);
+  X.globalAlpha = a * (.6 + SN(S.t * 5) * .1);
+  F('rgba(255,240,170,.22)'); Q(x - 13, y - 3, 26, 36); Q(x - 10, y - 6, 20, 42); Q(x - 15, y + 3, 30, 24);
+  F('#f4f8ff'); Q(x - 8, y + 6, 16, 2); Q(x - 5, y, 10, 6); Q(x - 4, y + 8, 8, 7); Q(x - 2, y + 15, 4, 1); Q(x - 9, y + 16, 18, 3); Q(x - 8, y + 19, 16, 12);
+  F('#aebcd8'); Q(x - 5, y + 4, 10, 1); Q(x - 3, y + 10, 1, 1); Q(x + 2, y + 10, 1, 1); Q(x - 2, y + 12, 4, 1); Q(x - 1, y + 16, 2, 8);
+  X.globalAlpha = a; txt('DIOS TE BENDIGA, HIJO', x - 17, y + 12, '#fff3b0', 1, 'r'); X.globalAlpha = 1;
+}
 function drawRun(S, attract) {
   const m = S.m, c = S.cam;
   X.save();
@@ -680,6 +699,7 @@ function drawRun(S, attract) {
   for (const f of S.floats) { X.globalAlpha = f.t > 1 ? clamp(1 - (f.t - 1) / .3, 0, 1) : 1; txt(f.s, f.x, f.y - f.t * 14, f.col, 1, 'c'); X.globalAlpha = 1; }
   for (const b of S.banners) { const w = tw(b.s, 2) + 16, x0 = RO(160 - w / 2); F('rgba(0,0,0,.8)'); Q(x0, 104, w, 20); F(b.col); Q(x0, 104, w, 1); Q(x0, 123, w, 1); if (b.t > .45 || FL(b.t * 10) % 2 === 0) txt(b.s, 160, 109, b.col, 2, 'c'); }
   X.restore();
+  if (S.bless > 0) drawBless(S);
   F('#000'); Q(0, 0, W, 12);
   txt('TIEMPO', 4, 4, '#8e8e88', 1, 'l', null); txt(String(Math.ceil(S.time)).padStart(2, '0'), 31, 4, S.time < 10 && FL(S.t * 4) % 2 ? '#ff5a3a' : '#e6ff00', 1, 'l', null);
   txt('PUNTOS', 44, 4, '#8e8e88', 1, 'l', null); txt(String(S.score).padStart(6, '0'), 70, 4, '#f2f2f2', 1, 'l', null);
