@@ -45,7 +45,7 @@ En el teléfono salen controles táctiles: joystick a la izquierda, botones 1 y 
 
 - **Meta:** 5 motorizados con velocidad, manejo, equilibrio y un especial propio. Hay que ir de Petare a la oficina antes de que se acabe el tiempo; cada tramo suma segundos. Si llegas, empieza el día siguiente, con más tráfico y menos tiempo.
 - **Puntos:** rasantes en combo (con insultos), caballito, piruetas desde las grúas, empanadas.
-- **Peligros:** alcantarillas con rama que solo pasas en caballito, camioneticas que frenan con "¡PARADA!", baches, motorizados que te empujan tocando corneta, el hombrillo que te tira al Guaire, colas con vendedores que no puedes chocar y el fiscal, que aparece cuando se llena la sirena.
+- **Peligros:** alcantarillas con rama que solo pasas en caballito, camioneticas que frenan con "¡PARADA!", baches, motorizados que te empujan tocando corneta, el hombrillo que te tira al Guaire, colas con vendedores que no puedes chocar y el fiscal, que aparece cuando se llena la sirena. Se le escapa saltando desde una grúa, dejándole un carro en medio o aguantando 9 segundos hasta que se cansa.
 - **Power-ups:** estampita de José Gregorio (invencible), anís (turbo, pero curdo), guayoyo (+5 segundos), casco (aguanta un choque) y empanada.
 - **Récords:** ranking de 5 con iniciales, guardado con `platanusArcadeStorage`.
 - **Pantalla de título:** con modo demo jugado por la IA.
@@ -56,3 +56,4 @@ En el teléfono salen controles táctiles: joystick a la izquierda, botones 1 y 
 - Tiempo inicial: `time: day > 1 ? 30 : 34` en `newRun`.
 - Segundos por tramo: `S.time += 12`.
 - Frecuencia de eventos: el objeto `S.nx` y la función `director`.
+- Fiscal: ventaja de velocidad `m.v + 21` y se cansa con `c.t > 9`.

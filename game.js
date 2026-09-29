@@ -546,15 +546,15 @@ function simStep(S, dt) {
   if (m.turbo > 0 && !m.crashed && rnd() < .5) S.parts.push({ x: m.x - 14, y: m.y - 4 - m.h, vx: -60, vy: 0, l: .25, c: pick(['#ff9a2a','#ffd23a']) });
   for (const q of S.parts) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 120 * dt; q.l -= dt; } S.parts = S.parts.filter(q => q.l > 0);
   if (m.inv > 0) m.inv -= dt; if (m.turbo > 0) m.turbo -= dt;
-  if (!S.cop && S.siren >= 1 && !m.crashed && !S.arrived) { S.cop = { x: m.x - 160, y: m.y, tpos: nearestPos(m.y), v: m.v + 40, lost: false, t: 0, catchT: 0, say: -9, bubbleT: 0 }; banner(S, 'EL FISCAL!', '#5a9bff', 1.6); }
+  if (!S.cop && S.siren >= 1 && !m.crashed && !S.arrived) { S.cop = { x: m.x - 160, y: m.y, tpos: nearestPos(m.y), v: m.v + 21, lost: false, t: 0, catchT: 0, say: -9, bubbleT: 0 }; banner(S, 'EL FISCAL!', '#5a9bff', 1.6); }
   const c = S.cop;
   if (c) {
     c.t += dt;
-    if (!c.lost && c.t > 15) { c.lost = true; S.siren = 0; fl(S, MX, m.y - 50, 'EL FISCAL SE CANSO', '#5a9bff'); }
+    if (!c.lost && c.t > 9) { c.lost = true; S.siren = 0; fl(S, MX, m.y - 50, 'EL FISCAL SE CANSO', '#5a9bff'); }
     const mp = nearestPos(m.y);
-    if (!c.lost && AB(c.y - GY[c.tpos]) < 1 && c.tpos !== mp) { const n = c.tpos + Math.sign(mp - c.tpos); if (!S.veh.some(v => occ(v).includes(n) && v.x < c.x + 14 && v.x + v.L > c.x - 14)) c.tpos = n; }
+    if (!c.lost && AB(c.y - GY[c.tpos]) < 1 && c.tpos !== mp) { const n = c.tpos + Math.sign(mp - c.tpos); if (!S.veh.some(v => occ(v).includes(n) && v.x < c.x + 14 && v.x + v.L > c.x - 14)) c.tpos = n; else c.catchT = 0; }
     c.y += clamp(GY[c.tpos] - c.y, -90 * dt, 90 * dt);
-    let cv = c.lost ? 50 : c.x < m.x - 40 ? m.v + 40 : m.v + 4; if (c.x > m.x - 16) cv = MN(cv, m.v);
+    let cv = c.lost ? 50 : c.x < m.x - 40 ? m.v + 21 : m.v + 4; if (c.x > m.x - 16) cv = MN(cv, m.v);
     const bl = S.veh.find(v => occ(v).includes(c.tpos) && v.x > c.x && v.x - (c.x + 10) < 26); if (bl) cv = MN(cv, bl.v);
     c.v += clamp(cv - c.v, -200 * dt, 120 * dt); c.x += c.v * dt;
     if (!c.lost && !m.crashed && !m.air && nearestPos(c.y) === mp && m.x - c.x < 30 && m.x - c.x > 0) { c.catchT += dt; if (c.catchT > 1.2) crash(S, 'preso'); } else c.catchT = MXX(0, c.catchT - dt);

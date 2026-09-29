@@ -30,7 +30,32 @@ function press(S, code, brake) {
 }
 const hasFloat = (S, s) => S.floats.some(f => f.s === s);
 
+/* ---------- fiscal ---------- */
+function copGiveUpTime() {
+  const S = scene(2, 112); S.siren = 1; step(S); const c = S.cop; if (!c) return -1;
+  for (let i = 0; i < 60 * 20 && !c.lost; i++) step(S, 1, s => { if (s.cop) s.cop.x = s.m.x - 300; });
+  return c.lost ? c.t : 99;
+}
+function copScene(copPos, playerPos, catchT) {
+  const S = scene(playerPos, 0); S.siren = 1; step(S); const c = S.cop;
+  c.tpos = copPos; c.y = G.GY[copPos]; c.x = S.m.x - 20; c.v = 0; c.t = 1; c.catchT = catchT;
+  return { S, c };
+}
+
 const cases = [
+  ['fiscal spawns with +21 over the player speed', () => { const S = scene(2, 112); S.siren = 1; step(S); return !!S.cop && Math.abs(S.cop.v - (S.m.v + 21)) < 1e-6; }],
+  ['fiscal far chase target is player speed +21', () => {
+    const S = scene(2, 112); S.siren = 1; step(S); const c = S.cop; c.x = S.m.x - 120; c.v = S.m.v;
+    step(S, 30); return c.x < S.m.x - 40 && Math.abs(c.v - (S.m.v + 21)) < .5;
+  }],
+  ['fiscal gives up at 9 s, not before 8.9 s', () => { const t = copGiveUpTime(); return t > 8.9 && t < 9.05; }],
+  ['fiscal gives up with EL FISCAL SE CANSO', () => { const S = scene(2, 112); S.siren = 1; step(S); const c = S.cop; c.t = 8.995; step(S); return c.lost && hasFloat(S, 'EL FISCAL SE CANSO'); }],
+  ['catch progress resets when a vehicle blocks the fiscal lane step', () => {
+    const { S, c } = copScene(2, 4, 1); addVeh(S, 'bus', 2, S.m.x - 80); step(S); return c.catchT === 0;
+  }],
+  ['catch progress only decays when the lane step is free', () => {
+    const { S, c } = copScene(2, 4, 1); step(S); return c.catchT > .9 && c.catchT < 1 && c.tpos === 3;
+  }],
   ['leaving the ranking screen does not crash the next render (real browser froze here)', () => {
     const any = new Proxy(function () {}, { get: () => any, set: () => true, apply: () => any });
     G.setX(any); release(); G.setMode('rank');
