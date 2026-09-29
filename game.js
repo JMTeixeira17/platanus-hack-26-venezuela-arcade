@@ -54,11 +54,12 @@ const I = {
 
 /* Controles tactiles para telefonos: salen con puntero tactil o al primer toque y
    escriben los mismos codigos de la maquina. Mitad izquierda: joystick flotante;
-   mitad derecha: boton 1 abajo, boton 2 arriba. */
+   mitad derecha: boton 1 abajo, boton 2 arriba. Fuera de la partida, arriba a la
+   derecha sale START (en la partida esa esquina sigue siendo el boton 2). */
 let TUI = null;
 const TCH = {};
 const setHeld = (c, on) => { if (on && !held[c]) pressed[c] = true; held[c] = on; };
-const pressTxt = () => TUI ? 'TOCA EL BOTON 1' : 'PRESIONA START';
+const pressTxt = () => TUI ? 'TOCA START' : 'PRESIONA START';
 function touchUI() {
   const d = document, css = 'position:fixed;box-sizing:border-box;pointer-events:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font:bold 8vmin monospace;color:#fff;border:.6vmin solid rgba(255,255,255,.5);background:rgba(255,255,255,.1);';
   const mk = (s, t, p) => { const e = d.createElement('div'); e.style.cssText = css + s; e.textContent = t || ''; (p || d.body).appendChild(e); return e; };
@@ -67,30 +68,40 @@ function touchUI() {
   mk('border:0;border-radius:0;background:none;top:2vmin;left:0;right:0;font-size:4vmin;color:#e6ff00', 'GIRA EL TELEFONO PARA VER MEJOR').id = 'mp-rot';
   const base = mk('width:30vmin;height:30vmin;left:5vmin;bottom:6vmin'), knob = mk('position:absolute;width:13vmin;height:13vmin;left:7.9vmin;top:7.9vmin;background:rgba(230,255,0,.4)', '', base);
   const b1 = mk('width:22vmin;height:22vmin;right:6vmin;bottom:7vmin', '1'), b2 = mk('width:16vmin;height:16vmin;right:9vmin;bottom:36vmin', '2');
-  return (jo, dx, dy, vm, on) => {
+  const sb = mk('width:26vmin;height:11vmin;right:3vmin;top:9vmin;border-radius:3vmin;font-size:6vmin;color:#e6ff00', 'START');
+  const bg = v => v ? 'rgba(230,255,0,.45)' : 'rgba(255,255,255,.1)';
+  const f = (jo, dx, dy, vm, on) => {
     const k = Math.min(1, 9 * vm / (Math.hypot(dx, dy) || 1)), bs = base.style;
     bs.left = jo ? jo.ox - 15 * vm + 'px' : '5vmin'; bs.top = jo ? jo.oy - 15 * vm + 'px' : 'auto'; bs.bottom = jo ? 'auto' : '6vmin';
     knob.style.transform = 'translate(' + dx * k + 'px,' + dy * k + 'px)';
-    b1.style.background = on.P1_1 ? 'rgba(230,255,0,.45)' : 'rgba(255,255,255,.1)'; b2.style.background = on.P1_2 ? 'rgba(230,255,0,.45)' : 'rgba(255,255,255,.1)';
+    b1.style.background = bg(on.P1_1); b2.style.background = bg(on.P1_2); sb.style.background = bg(on.START1);
   };
+  f.show = v => { const d = v ? 'flex' : 'none'; if (sb.style.display !== d) sb.style.display = d; };
+  return f;
 }
 function onTouch(e) {
   if (e.cancelable) e.preventDefault();
   unlockAudio();
   if (!TUI) TUI = touchUI();
   const w = window.innerWidth, h = window.innerHeight, vm = Math.min(w, h) / 100, ts = e.changedTouches, end = e.type === 'touchend' || e.type === 'touchcancel';
+  /* Si el navegador pierde un touchend, el boton quedaria apretado para siempre y
+     ningun toque nuevo contaria: se sueltan los toques que ya no estan en pantalla. */
+  if (e.touches) {
+    const live = Array.from(e.touches, t => '' + t.identifier);
+    for (const k in TCH) if (!live.includes(k)) { for (const c of TCH[k].j ? ['P1_U', 'P1_D', 'P1_L', 'P1_R'] : [TCH[k].b]) held[c] = false; delete TCH[k]; }
+  }
   for (let i = 0; i < ts.length; i++) {
     const t = ts[i], id = t.identifier, x = t.clientX, y = t.clientY;
-    if (e.type === 'touchstart') { const L = x < w / 2; if (L && Object.values(TCH).some(o => o.j)) continue; TCH[id] = { j: L, ox: x, oy: y }; }
+    if (e.type === 'touchstart') { const L = x < w / 2; if (L && Object.values(TCH).some(o => o.j)) continue; TCH[id] = { j: L, s: !L && MODE !== 'play' && x > w - 30 * vm && y < 21 * vm, ox: x, oy: y }; }
     const o = TCH[id]; if (!o) continue;
     if (end) { delete TCH[id]; continue; }
-    o.x = x; o.y = y; o.b = y < h - 31 * vm ? 'P1_2' : 'P1_1';
+    o.x = x; o.y = y; o.b = o.s ? 'START1' : y < h - 31 * vm ? 'P1_2' : 'P1_1';
   }
   let jo = null; const on = {};
   for (const k in TCH) { const o = TCH[k]; if (o.j) jo = o; else on[o.b] = 1; }
   const dx = jo ? jo.x - jo.ox : 0, dy = jo ? jo.y - jo.oy : 0, len = Math.hypot(dx, dy), s = len < 5 * vm ? 1e9 : .4 * len;
   setHeld('P1_U', dy < -s); setHeld('P1_D', dy > s); setHeld('P1_L', dx < -s); setHeld('P1_R', dx > s);
-  setHeld('P1_1', !!on.P1_1); setHeld('P1_2', !!on.P1_2);
+  setHeld('P1_1', !!on.P1_1); setHeld('P1_2', !!on.P1_2); setHeld('START1', !!on.START1);
   TUI(jo, dx, dy, vm, on);
 }
 for (const n of ['touchstart', 'touchmove', 'touchend', 'touchcancel']) window.addEventListener(n, onTouch, { passive: false, capture: true });
@@ -799,11 +810,13 @@ function create() {
   ATT = newRun(0, true, 1, 0);
   if (!TUI && window.matchMedia && window.matchMedia('(pointer: coarse)').matches) TUI = touchUI();
 }
+function syncTUI() { if (TUI) TUI.show(MODE !== 'play'); }
 function update(time, delta) {
   ACC += MN(.1, (delta || 16) / 1000);
   let n = 0;
   while (ACC >= STEP && n < 6) { tick(STEP); ACC -= STEP; n++; for (const k in pressed) pressed[k] = false; }
   render();
+  syncTUI();
   TEX.refresh();
 }
 new Phaser.Game({

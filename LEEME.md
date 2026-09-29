@@ -39,6 +39,8 @@ Fecha límite: 21 de octubre de 2026, 23:59 hora de Caracas.
 
 Funciona con cualquiera de los dos joysticks de la máquina. No se tocó `CABINET_KEYS`.
 
+En el teléfono salen controles táctiles: joystick a la izquierda, botones 1 y 2 a la derecha y, fuera de la partida, START arriba a la derecha.
+
 ## Qué hay en el juego
 
 - **Meta:** 5 motorizados con velocidad, manejo, equilibrio y un especial propio. Hay que ir de Petare a la oficina antes de que se acabe el tiempo; cada tramo suma segundos. Si llegas, empieza el día siguiente, con más tráfico y menos tiempo.
