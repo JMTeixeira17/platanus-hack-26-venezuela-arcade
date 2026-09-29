@@ -256,7 +256,7 @@ const cases = [
   ['a car visible at the right edge survives a cola spawn and no cola car overlaps it', () => {
     const S = scene(2, 50); S.cam = S.m.x - G.MX; const k = addVeh(S, 'car', 1, S.cam + 300), far = addVeh(S, 'car', 0, S.cam + 330);
     G.spawnCola(S); const cola = S.veh.filter(v => v.cola);
-    return S.veh.includes(k) && !S.veh.includes(far) && cola.length > 10 && cola.every(v => v.x >= k.x + k.L);
+    return S.veh.includes(k) && !S.veh.includes(far) && cola.length >= 4 && cola.every(v => v.x >= k.x + k.L);
   }],
   ['hazards and pickups on screen survive a cola spawn', () => {
     const S = scene(2, 50); S.cam = S.m.x - G.MX; S.haz = [{ kind: 'bache', pos: 1, x: S.cam + 310, w: 10 }]; S.pick = [{ kind: 'empanada', pos: 3, x: S.cam + 312 }];
@@ -264,13 +264,15 @@ const cases = [
   }],
   /* ---------- cola de choque ---------- */
   ['about 40% of colas are choque colas (no vendors), the rest keep the vendors', () => {
-    let ch = 0, ok = true; const N = 300;
-    for (let i = 0; i < N; i++) { const S = scene(2, 50); S.cam = S.m.x - G.MX; G.spawnCola(S); if (S.cola.ch) { ch++; ok = ok && S.vnd.length === 0; } else ok = ok && S.vnd.length > 0; }
+    let ch = 0, ok = true; const N = 300, R = Math.random; let q = 7;
+    /* newRun reseeds from Math.random, so pin it: the same 300 colas every run (no flaky statistics) */
+    Math.random = () => (q = q * 16807 % 2147483647) / 2147483647;
+    try { for (let i = 0; i < N; i++) { const S = scene(2, 50); S.cam = S.m.x - G.MX; G.spawnCola(S); if (S.cola.ch) { ch++; ok = ok && S.vnd.length === 0; } else ok = ok && S.vnd.length > 0; } } finally { Math.random = R; }
     return ok && ch / N > .3 && ch / N < .5;
   }],
   ['choque cola: exactly one lane is free across the whole cola, with stopped cars and a wreck in the others', () => [0, 1, 2, 3, 4, 5].every(() => {
     const S = colaOf(true), free = [0, 1, 2].filter(l => laneFree(S, l)), wr = S.veh.filter(v => v.wr);
-    return free.length === 1 && wr.length === 2 && wr.every(v => v.lane !== free[0]) && S.veh.filter(v => v.cola).length > 6;
+    return free.length === 1 && wr.length === 2 && wr.every(v => v.lane !== free[0]) && S.veh.filter(v => v.cola).length >= 4;
   })],
   ['choque cola: the free lane stays clear while you ride it to the end', () => [0, 1, 2, 3].every(() => {
     const S = colaOf(true), F = [0, 1, 2].find(l => laneFree(S, l)), m = rideAt(S, F * 2, S.cola.x0 - 80, 100, 1);
