@@ -393,8 +393,11 @@ function aiCtl(S) {
 function playerCtl(S, dt) {
   const m = S.m; m.moveCd -= dt;
   if (AB(m.y - GY[m.tpos]) < 4) {
-    if ((I.pU() || (I.U() && m.moveCd <= 0)) && m.tpos > 0) { m.tpos--; m.moveCd = .2; }
-    else if ((I.pD() || (I.D() && m.moveCd <= 0)) && m.tpos < 5) { m.tpos++; m.moveCd = .2; }
+    m.sq = null;
+    const d = (I.pU() || (I.U() && m.moveCd <= 0)) && m.tpos > 0 ? -1 : (I.pD() || (I.D() && m.moveCd <= 0)) && m.tpos < 5 ? 1 : 0, n = m.tpos + d;
+    /* Colarse: desde un canalito o el hombrillo, bien lento, se cruza el carril trancado hasta el canalito libre de al lado */
+    if (d && m.v < 50 && !m.air && m.tpos % 2 && sideBlocked(S, n) && n + d >= 0 && n + d <= 5 && !sideBlocked(S, n + d)) { m.tpos = n + d; m.sq = n; m.moveCd = .2; fl(S, MX, m.y - 40, 'TE COLASTE!', '#e6ff00'); sfx(S, 'ras'); }
+    else if (d) { m.tpos = n; m.moveCd = .2; }
   }
   if (m.air) { if (I.L()) m.rot -= 7 * dt; if (I.R()) m.rot += 7 * dt; m.acc = 0; }
   else { m.wheelie = I.A(); m.acc = I.R() ? 1 : I.L() ? -1 : 0; }
@@ -432,7 +435,7 @@ function simStep(S, dt) {
   if (!m.crashed && !S.arrived) { S.time = MXX(0, S.time - dt); if (S.time <= 0) crash(S, 'tarde'); }
   director(S);
   const inCola = S.cola && !S.colaDone;
-  if (inCola && !S.colaB && m.x + 10 > S.cola.x0 - 60) { S.colaB = true; banner(S, 'COLA!', '#ff9a2a', 1.4); }
+  if (inCola && !S.colaB && m.x + 10 > S.cola.x0 - 60) { S.colaB = true; banner(S, 'COLA!', '#ff9a2a', 1.4); fl(S, MX, m.y - 40, 'FRENA PARA COLARTE', '#ff9a2a'); }
   if (inCola && m.x - 10 > S.cola.x1) { S.colaDone = true; for (const v of S.veh) if (v.cola) v.base = 35 + rnd() * 20; }
   S.spawnT -= dt;
   if (S.spawnT <= 0 && !(S.cola && !S.colaDone)) {
@@ -470,7 +473,7 @@ function simStep(S, dt) {
   if (!m.crashed) {
     S.dAcc += m.v * dt * (m.ri === 0 ? 1.5 : 1) / 10; while (S.dAcc >= 1) { S.dAcc--; S.score++; }
     if (!m.air) for (const v of S.veh) {
-      if (v.x >= m.x + 10 || v.x + v.L <= m.x - 10) continue;
+      if (v.x >= m.x + 10 || v.x + v.L <= m.x - 10 || v.lane * 2 === m.sq) continue;
       /* El choque sigue al dibujo (v.gy): los anchos tapan el canalito de atras, nunca el de adelante. */
       const dy = m.y - v.gy, lo = v.wide ? -22 : -7.5;
       if (v.kind === 'grua' && !v.used && v.x > m.x - 4 && AB(dy) < 22) { launch(S, v); break; }

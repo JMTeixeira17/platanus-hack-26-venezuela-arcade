@@ -31,6 +31,7 @@ Fecha límite: 21 de octubre de 2026, 23:59 hora de Caracas.
 | Máquina | Teclado (pruebas) | Acción |
 |---|---|---|
 | Joystick arriba / abajo | W / S | Cambiar de carril |
+| Frenando, arriba / abajo desde un canalito | A + W / S | Colarse por un carril trancado |
 | Joystick derecha / izquierda | D / A | Acelerar / frenar |
 | Botón 1 (mantener) | U | Caballito |
 | Botón 2 | I | Corneta |

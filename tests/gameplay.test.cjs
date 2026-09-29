@@ -56,6 +56,37 @@ const cases = [
   ['catch progress only decays when the lane step is free', () => {
     const { S, c } = copScene(2, 4, 1); step(S); return c.catchT > .9 && c.catchT < 1 && c.tpos === 3;
   }],
+  /* ---------- colarse ---------- */
+  ['slow in canal 3, lane jammed, press up -> squeezes to canal 1', () => {
+    const S = scene(3, 30); jam(S, 1); press(S, 'P1_U', true);
+    const went = S.m.tpos === 1 && hasFloat(S, 'TE COLASTE!');
+    step(S, 60, () => { G.held.P1_L = true; });
+    return went && !S.m.crashed && S.m.tpos === 1 && Math.abs(S.m.y - G.GY[1]) < 1 && S.m.sq == null;
+  }],
+  ['squeezing does not score rasante on the crossed lane', () => {
+    const S = scene(3, 30); const v = addVeh(S, 'car', 1, S.m.x - 5); jam(S, 1); press(S, 'P1_U', true);
+    step(S, 12, () => { G.held.P1_L = true; }); return !v.adj;
+  }],
+  ['slow on hombrillo, lane jammed, press up -> squeezes to canal 3', () => {
+    const S = scene(5, 30); jam(S, 2); press(S, 'P1_U', true);
+    step(S, 60, () => { G.held.P1_L = true; });
+    return !S.m.crashed && S.m.tpos === 3 && Math.abs(S.m.y - G.GY[3]) < 1;
+  }],
+  ['fast in canal 3, lane jammed, press up -> steps in and crashes', () => {
+    const S = scene(3, 100); jam(S, 1); press(S, 'P1_U');
+    const into = S.m.tpos === 2; step(S, 60); return into && S.m.crashed && S.m.why === 'choque';
+  }],
+  ['destination canal blocked -> no squeeze', () => {
+    const S = scene(3, 30); jam(S, 1); addVeh(S, 'bus', 0, S.m.x - 30); press(S, 'P1_U', true);
+    return S.m.tpos === 2 && S.m.sq == null;
+  }],
+  ['canal 1 pressing up with lane 0 jammed -> no squeeze', () => {
+    const S = scene(1, 30); jam(S, 0); press(S, 'P1_U', true); return S.m.tpos === 0 && S.m.sq == null;
+  }],
+  ['COLA banner also tells how to squeeze', () => {
+    const S = scene(2, 50); S.cola = { x0: S.m.x + 40, x1: S.m.x + 400 }; S.colaDone = false; S.colaB = false;
+    step(S); return S.banners.some(b => b.s === 'COLA!') && hasFloat(S, 'FRENA PARA COLARTE');
+  }],
   ['leaving the ranking screen does not crash the next render (real browser froze here)', () => {
     const any = new Proxy(function () {}, { get: () => any, set: () => true, apply: () => any });
     G.setX(any); release(); G.setMode('rank');
