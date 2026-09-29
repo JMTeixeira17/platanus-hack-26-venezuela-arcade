@@ -155,14 +155,14 @@ const cases = [
   ['intro starts the match by itself after about 2.5 s', () => {
     toIntro(3); ticks(Math.round(2.3 * 60)); const still = G.getMode() === 'intro';
     ticks(Math.round(.4 * 60)); const r = G.getRun();
-    return still && G.getMode() === 'play' && r && r.m.ri === 3 && r.day === 1 && r.score === 0 && !r.ai;
+    return still && G.getMode() === 'play' && r && r.m.ri === 3 && r.day === 1 && r.score === 0;
   }],
   ['START or button 1 skip the intro after 0.3 s, not before', () => {
     toIntro(); press('START1'); const early = G.getMode() === 'intro'; ticks(20); press('START1'); const a = G.getMode() === 'play';
     toIntro(); ticks(20); press('P1_1'); return early && a && G.getMode() === 'play';
   }],
   ['arriving at la chamita\'s place goes to the next night without the intro', () => {
-    release(); G.setX(fake([])); G.setMode('play'); const r = G.newRun(1, false, 1, 500); r.arrived = r.t = 1; r.t = 5; G.setRun(r);
+    release(); G.setX(fake([])); G.setMode('play'); const r = G.newRun(1, 1, 500); r.arrived = r.t = 1; r.t = 5; G.setRun(r);
     let seen = false; for (let i = 0; i < 30 && G.getRun() === r; i++) { G.tick(G.STEP); seen = seen || G.getMode() === 'intro'; }
     const n = G.getRun(); return !seen && G.getMode() === 'play' && n !== r && n.day === 2 && n.score === 500;
   }],

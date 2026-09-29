@@ -2,7 +2,7 @@
 
 Juego para el Arcade Challenge de Platanus Hack 26 Caracas. Un jugador, Phaser 3, todo dibujado y sonado con código.
 
-- `game.js`: 49.7 KB minificado (el límite es 50 KB). Pasa `npm run check-restrictions`.
+- `game.js`: 48.9 KB minificado (el límite es 50 KB). Pasa `npm run check-restrictions`.
 - `metadata.json`: nombre, descripción y `single_player`.
 - `cover.png`: 800x600, pixel art hecho con los sprites y la fuente del juego. Se regenera con `node tools/make-cover.mjs` (necesita Google Chrome instalado).
 
@@ -47,7 +47,8 @@ En el teléfono salen controles táctiles: joystick a la izquierda, botones 1 y 
 - **Meta:** es de noche y hay que buscar a la chamita para irse a rumbear. 5 motorizados con velocidad, manejo, equilibrio y un especial propio. Hay que ir de Petare a la casa de la chamita antes de que se acabe el tiempo; cada tramo suma segundos. Si llegas a tiempo, ella te espera en la acera celebrando y empieza la noche siguiente, con más tráfico y menos tiempo. Si no, Wilkerson se la lleva.
 - **La Fajardo de noche:** cielo con estrellas y luna llena, el Ávila en sombra con las luces de los barrios, edificios con ventanas encendidas y vallas iluminadas.
 - **Puntos:** rasantes en combo (con insultos), caballito, piruetas desde las grúas, empanadas.
-- **Peligros:** alcantarillas con rama que solo pasas en caballito, camioneticas que frenan con "¡PARADA!", baches, motorizados que te empujan tocando corneta, el hombrillo que te tira al Guaire, colas con vendedores que no puedes chocar y el fiscal, que aparece cuando se llena la sirena. Se le escapa saltando desde una grúa, dejándole un carro en medio o aguantando 9 segundos hasta que se cansa.
+- **Peligros:** alcantarillas con rama que solo pasas en caballito, camioneticas que frenan con "¡PARADA!", baches, motorizados que te empujan tocando corneta, el hombrillo que te tira al Guaire, colas con vendedores que no puedes chocar, colas de choque (un accidente con humo y conos cierra dos carriles y sus canalitos: hay que buscar el único carril libre) y el paco, que aparece cuando se llena la sirena. Si vas derecho sin hacer nada, te agarra. Se le escapa zigzagueando (cada cambio de canal le borra lo que llevaba para agarrarte y a él lo frena cuando te sigue), acelerando en caballito (el paco tiene tope de velocidad y en la persecución el caballito corre más, pero si lo aguantas mucho te vas de espaldas), saltando desde una grúa, dejándole un carro en medio o aguantando 9 segundos hasta que se cansa.
+- **En el aire no agarras nada:** los power-ups solo se recogen con las ruedas en el piso.
 - **Power-ups:** estampita de José Gregorio (invencible, y se aparece a bendecirte con música de iglesia), Anís Cartujo (turbo, pero curdo), guayoyo (+5 segundos), casco (aguanta un choque) y empanada.
 - **Récords:** ranking de 5 con iniciales, guardado con `platanusArcadeStorage`.
 - **Pantalla de título:** fija, sobre un cielo de noche (degradado azul de #000628 a #011469 con estrellas, igual que la selección de piloto), con el motorizado en caballito con la botella de anís al centro, los controles (WASD, J, K) a los lados y el guiño a Platanus Hack abajo. El ranking se ve al terminar la partida.
@@ -59,4 +60,5 @@ En el teléfono salen controles táctiles: joystick a la izquierda, botones 1 y 
 - Tiempo inicial: `time: day > 1 ? 30 : 34` en `newRun`.
 - Segundos por tramo: `S.time += 12`.
 - Frecuencia de eventos: el objeto `S.nx` y la función `director`.
-- Fiscal: ventaja de velocidad `m.v + 21` y se cansa con `c.t > 9`.
+- Paco: tope de velocidad `MN(135, ...)`, ventaja `m.v + 21` de lejos y `m.v + 6` de cerca, se cansa con `c.t > 9`, pierde velocidad al seguirte de canal con `c.v *= .7`; el caballito da `+30` durante la persecución (`+12` normal).
+- Colas de choque: `rnd() < .4` en `spawnCola`.

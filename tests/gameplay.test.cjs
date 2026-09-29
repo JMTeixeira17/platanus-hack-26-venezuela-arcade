@@ -1,4 +1,4 @@
-// Behavioral tests for gameplay rules in game.js: cop (fiscal), squeezing through a jam, pickups.
+// Behavioral tests for gameplay rules in game.js: the cop (el paco), squeezing through a jam, pickups.
 const fs = require('fs');
 let src = fs.readFileSync(require('path').join(__dirname, '..', 'game.js'), 'utf8');
 src = src.slice(0, src.indexOf('new Phaser.Game('));
@@ -6,12 +6,12 @@ src = src.slice(0, src.indexOf('new Phaser.Game('));
 src = 'const TXT = [];\n' + src.replace("function txt(s, x, y, col, sc = 1, al = 'l', sh = '#000') {", "function txt(s, x, y, col, sc = 1, al = 'l', sh = '#000') { TXT.push([String(s), sc, x, y]);");
 global.window = { addEventListener() {} };
 global.document = { createElement: () => ({ getContext: () => ({ set fillStyle(v) {}, fillRect() {} }) }) };
-const G = new Function(src + '\nreturn { newRun, simStep, drawRun, GY, STEP, vehSpr, held, pressed, tw, W, MX, FONT, setAC: a => { AC = a; }, setX: c => { X = c; }, tick, render, getMode: () => MODE, setMode: md => { MODE = md; MT = 0; }, TXT, H, TRIP, drawOver, setMT: t => { MT = t; }, setRun: r => { RUN = r; }, setSel: i => { SEL = i; }, get CHAMA() { return CHAMA; }, TRAMOS, ENDS, crash };')();
+const G = new Function(src + '\nreturn { newRun, simStep, drawRun, GY, STEP, vehSpr, held, pressed, tw, W, MX, FONT, setAC: a => { AC = a; }, setX: c => { X = c; }, tick, render, getMode: () => MODE, setMode: md => { MODE = md; MT = 0; }, TXT, H, TRIP, drawOver, setMT: t => { MT = t; }, setRun: r => { RUN = r; }, setSel: i => { SEL = i; }, get CHAMA() { return CHAMA; }, TRAMOS, ENDS, crash, spawnCola, occ };')();
 
 function release() { for (const k in G.held) G.held[k] = false; for (const k in G.pressed) G.pressed[k] = false; }
-function scene(pos, v = 0, ai = false) {
+function scene(pos, v = 0) {
   release();
-  const S = G.newRun(0, ai, 1, 0);
+  const S = G.newRun(0, 1, 0);
   S.cd = 0; S.spawnT = 1e9; S.haz = []; S.pick = []; S.riv = []; S.vnd = []; S.cop = null; S.veh = [];
   for (const k in S.nx) S.nx[k] = 1e9;
   const m = S.m; m.x = 1000; m.v = v; m.tpos = pos; m.y = G.GY[pos];
@@ -33,7 +33,7 @@ function press(S, code, brake) {
 const hasFloat = (S, s) => S.floats.some(f => f.s === s);
 
 /* ---------- pickups ---------- */
-function grab(kind, ai) { const S = scene(2, 50, ai); S.pick = [{ kind, pos: 2, x: S.m.x }]; step(S); return S; }
+function grab(kind) { const S = scene(2, 50); S.pick = [{ kind, pos: 2, x: S.m.x }]; step(S); return S; }
 /* Fake Web Audio: records every oscillator (frequency, type, start/stop, gain envelope). */
 function listen(fn) {
   const osc = [], P = () => ({ value: 0, pts: [], setValueAtTime(v, t) { this.pts.push([v, t]); }, linearRampToValueAtTime(v, t) { this.pts.push([v, t]); }, exponentialRampToValueAtTime(v, t) { this.pts.push([v, t]); } });
@@ -57,8 +57,17 @@ function extraRects(S) {
   return withB.filter(r => { const n = left.get(r) || 0; if (n) { left.set(r, n - 1); return false; } return true; }).map(r => r.split(',').slice(0, 4).map(Number));
 }
 const ANIS = 'ANIS CARTUJO PARA GENTE DE LUJOO!!';
+/* A fresh run with a cola spawned just ahead; kind true = the choque variant, false = the vendors cola. */
+function colaOf(kind) {
+  for (let i = 0; i < 80; i++) { const S = scene(2, 50); S.cam = S.m.x - G.MX; G.spawnCola(S); if (!!S.cola.ch === kind) return S; }
+  throw new Error('no cola of kind ' + kind);
+}
+const laneFree = (S, l) => !S.veh.some(v => G.occ(v).includes(l * 2) && v.x < S.cola.x1 + 60 && v.x + v.L > S.cola.x0 - 5);
+/* Positions the wreck closes: its lanes and the canals (or hombrillo) next to them. */
+const closed = S => { const b = new Set(); for (const l of [0, 1, 2]) if (!laneFree(S, l)) for (const p of [l * 2 - 1, l * 2, l * 2 + 1]) if (p >= 0 && p <= 5) b.add(p); return b; };
+function rideAt(S, p, x, v, n) { const m = S.m; m.x = x; m.v = v; m.tpos = p; m.y = G.GY[p]; S.cam = m.x - G.MX; step(S, n, () => { G.held.P1_R = true; }); release(); return m; }
 
-/* ---------- fiscal ---------- */
+/* ---------- el paco (the cop) ---------- */
 function copGiveUpTime() {
   const S = scene(2, 112); S.siren = 1; step(S); const c = S.cop; if (!c) return -1;
   for (let i = 0; i < 60 * 20 && !c.lost; i++) step(S, 1, s => { if (s.cop) s.cop.x = s.m.x - 300; });
@@ -81,18 +90,52 @@ function draws(S) { const log = []; G.setX(fakeImg(log)); G.drawRun(S); return l
 function arrive(v = 120) { const S = scene(2, v); S.time = 30; S.m.x = S.signs[5].x - 3; for (let i = 0; i < 20 && !S.arrived; i++) step(S); return S; }
 
 const cases = [
-  ['fiscal spawns with +21 over the player speed', () => { const S = scene(2, 112); S.siren = 1; step(S); return !!S.cop && Math.abs(S.cop.v - (S.m.v + 21)) < 1e-6; }],
-  ['fiscal far chase target is player speed +21', () => {
+  ['paco spawns with +21 over the player speed', () => { const S = scene(2, 112); S.siren = 1; step(S); return !!S.cop && Math.abs(S.cop.v - (S.m.v + 21)) < 1e-6; }],
+  ['paco far chase target is player speed +21', () => {
     const S = scene(2, 112); S.siren = 1; step(S); const c = S.cop; c.x = S.m.x - 120; c.v = S.m.v;
     step(S, 30); return c.x < S.m.x - 40 && Math.abs(c.v - (S.m.v + 21)) < .5;
   }],
-  ['fiscal gives up at 9 s, not before 8.9 s', () => { const t = copGiveUpTime(); return t > 8.9 && t < 9.05; }],
-  ['fiscal gives up with EL FISCAL SE CANSO', () => { const S = scene(2, 112); S.siren = 1; step(S); const c = S.cop; c.t = 8.995; step(S); return c.lost && hasFloat(S, 'EL FISCAL SE CANSO'); }],
-  ['catch progress resets when a vehicle blocks the fiscal lane step', () => {
+  ['paco gives up at 9 s, not before 8.9 s', () => { const t = copGiveUpTime(); return t > 8.9 && t < 9.05; }],
+  ['paco gives up with EL PACO SE CANSO', () => { const S = scene(2, 112); S.siren = 1; step(S); const c = S.cop; c.t = 8.995; step(S); return c.lost && hasFloat(S, 'EL PACO SE CANSO'); }],
+  ['the chase starts with an EL PACO! banner', () => { const S = scene(2, 112); S.siren = 1; step(S); return !!S.cop && S.banners.some(b => b.s === 'EL PACO!'); }],
+  ['getting caught reads TE AGARRO EL PACO', () => G.ENDS.preso[0] === 'PRESO!' && G.ENDS.preso[1] === 'TE AGARRO EL PACO'],
+  ['no FISCAL is left on screen text in game.js', () => !/FISCAL/i.test(fs.readFileSync(require('path').join(__dirname, '..', 'game.js'), 'utf8'))],
+  ['catch progress resets when a vehicle blocks the paco lane step', () => {
     const { S, c } = copScene(2, 4, 1); addVeh(S, 'bus', 2, S.m.x - 80); step(S); return c.catchT === 0;
   }],
   ['catch progress only decays when the lane step is free', () => {
     const { S, c } = copScene(2, 4, 1); step(S); return c.catchT > .9 && c.catchT < 1 && c.tpos === 3;
+  }],
+  /* ---------- escaping el paco by skill ---------- */
+  ['paco top speed is capped, even when you ride on turbo', () => {
+    const S = scene(2, 190); S.m.turbo = 4; S.m.drunkT = 99; S.siren = 1; let top = 0;
+    step(S, 180, s => { G.held.P1_R = true; s.m.drunkT = 99; if (s.cop) top = Math.max(top, s.cop.v); });
+    return !!S.cop && top > 100 && top <= 135;
+  }],
+  ['accelerating in a wheelie pulls away from a paco right behind', () => {
+    const S = scene(2, 112); S.siren = 1; step(S); const c = S.cop; c.x = S.m.x - 32; c.tpos = 2; c.y = G.GY[2]; c.v = S.m.v; c.t = 1;
+    step(S, 90, () => { G.held.P1_R = true; G.held.P1_1 = true; }); const g1 = S.m.x - c.x;
+    step(S, 60, () => { G.held.P1_R = true; G.held.P1_1 = true; }); const g2 = S.m.x - c.x; release();
+    return !S.m.crashed && g1 > 32 && g2 > g1 + 25;
+  }],
+  ['zigzagging every 0.5 s for 6 s with the paco close never gets you caught, and he falls back', () => {
+    const S = scene(2, 112); S.siren = 1; step(S); const c = S.cop; c.x = S.m.x - 25; c.tpos = 2; c.y = G.GY[2]; c.v = S.m.v; c.t = 1;
+    for (let i = 0; i < 12 && !S.m.crashed; i++) { press(S, i % 2 ? 'P1_U' : 'P1_D'); step(S, 29); }
+    return !S.m.crashed && !c.lost && S.m.x - c.x > 25; // he fell back
+  }],
+  ['your lane change resets his catch progress', () => {
+    const { S, c } = copScene(2, 2, 1); S.m.v = 100; c.v = 100; press(S, 'P1_D'); return c.catchT < .05;
+  }],
+  ['his lane change to follow you costs him speed', () => {
+    const { S, c } = copScene(2, 3, 0); S.m.v = 100; c.v = 100; step(S); return c.tpos === 3 && c.v < 90;
+  }],
+  ['riding straight in his lane without doing anything gets you caught', () => {
+    const S = scene(2, 112); S.siren = 1; step(S); const c = S.cop;
+    for (let i = 0; i < 60 * 10 && !S.m.crashed && !c.lost; i++) step(S);
+    return S.m.crashed && S.m.why === 'preso';
+  }],
+  ['flying off a grua still loses the paco', () => {
+    const S = scene(2, 112); S.siren = 1; step(S); const c = S.cop; addVeh(S, 'grua', 1, S.m.x + 5); step(S); return S.m.air && c.lost;
   }],
   /* ---------- colarse ---------- */
   ['slow in canal 3, lane jammed, press up -> squeezes to canal 1', () => {
@@ -140,7 +183,6 @@ const cases = [
     const end = Math.max(...os.map(o => o.t1));
     return F && C && os.every(o => o.type !== 'square' && o.peak <= .03) && end > 1.5 && end < 2.6;
   }],
-  ['estampita: the amen stays silent in the AI demo', () => listen(() => grab('estampita', true)).length === 0],
   ['other pickups still play the pick jingle', () => near(listen(() => grab('empanada')), 523, o => o.type === 'square')],
   /* ---------- anis ---------- */
   ['anis: turbo, banner and the exact CARTUJO text', () => { const S = grab('anis'); return S.m.turbo > 3.9 && S.banners.some(b => b.s === 'ANIS!') && hasFloat(S, ANIS); }],
@@ -184,7 +226,7 @@ const cases = [
     return S.arrived > 0 && b && b.s === 'LA RECOGISTE! A RUMBEAR!' && G.tw(b.s, 2) + 16 <= G.W;
   }],
   ['levels are NOCHE N: start banner, HUD and game-over row, never DIA', () => {
-    const S = G.newRun(0, false, 2, 0), start = S.banners[0] && S.banners[0].s;
+    const S = G.newRun(0, 2, 0), start = S.banners[0] && S.banners[0].s;
     G.TXT.length = 0; paint(S); const hud = G.TXT.map(q => q[0]);
     S.end = G.ENDS.tarde; G.TXT.length = 0; G.setMT(1); G.drawOver(S); const over = G.TXT.map(q => q[0]);
     return start === 'NOCHE 2' && hud.includes('NOCHE 2') && over.includes('NOCHE') && ![...hud, ...over].some(t => /^DIA\b/.test(t));
@@ -210,6 +252,61 @@ const cases = [
     return ok && n > 150;
   })],
   ['no office / work wording is left in game.js', () => !/OFICINA|TRABAJO|TE BOTARON|JEFE|'DIA /i.test(fs.readFileSync(require('path').join(__dirname, '..', 'game.js'), 'utf8'))],
+  /* ---------- cola spawn keeps what is on screen ---------- */
+  ['a car visible at the right edge survives a cola spawn and no cola car overlaps it', () => {
+    const S = scene(2, 50); S.cam = S.m.x - G.MX; const k = addVeh(S, 'car', 1, S.cam + 300), far = addVeh(S, 'car', 0, S.cam + 330);
+    G.spawnCola(S); const cola = S.veh.filter(v => v.cola);
+    return S.veh.includes(k) && !S.veh.includes(far) && cola.length > 10 && cola.every(v => v.x >= k.x + k.L);
+  }],
+  ['hazards and pickups on screen survive a cola spawn', () => {
+    const S = scene(2, 50); S.cam = S.m.x - G.MX; S.haz = [{ kind: 'bache', pos: 1, x: S.cam + 310, w: 10 }]; S.pick = [{ kind: 'empanada', pos: 3, x: S.cam + 312 }];
+    G.spawnCola(S); return S.haz.length === 1 && S.pick.length === 1;
+  }],
+  /* ---------- cola de choque ---------- */
+  ['about 40% of colas are choque colas (no vendors), the rest keep the vendors', () => {
+    let ch = 0, ok = true; const N = 300;
+    for (let i = 0; i < N; i++) { const S = scene(2, 50); S.cam = S.m.x - G.MX; G.spawnCola(S); if (S.cola.ch) { ch++; ok = ok && S.vnd.length === 0; } else ok = ok && S.vnd.length > 0; }
+    return ok && ch / N > .3 && ch / N < .5;
+  }],
+  ['choque cola: exactly one lane is free across the whole cola, with stopped cars and a wreck in the others', () => [0, 1, 2, 3, 4, 5].every(() => {
+    const S = colaOf(true), free = [0, 1, 2].filter(l => laneFree(S, l)), wr = S.veh.filter(v => v.wr);
+    return free.length === 1 && wr.length === 2 && wr.every(v => v.lane !== free[0]) && S.veh.filter(v => v.cola).length > 6;
+  })],
+  ['choque cola: the free lane stays clear while you ride it to the end', () => [0, 1, 2, 3].every(() => {
+    const S = colaOf(true), F = [0, 1, 2].find(l => laneFree(S, l)), m = rideAt(S, F * 2, S.cola.x0 - 80, 100, 1);
+    let clear = true; for (let i = 0; i < 60 * 8 && m.x < S.cola.x1 + 30 && !m.crashed; i++) { step(S, 1, () => { G.held.P1_R = true; }); clear = clear && laneFree(S, F); }
+    release(); return clear && !m.crashed && m.x >= S.cola.x1 + 30;
+  })],
+  ['choque cola: riding into a closed lane or canal at the wreck crashes', () => [0, 1, 2].every(() => {
+    const S0 = colaOf(true), shut = [...closed(S0)];
+    return shut.length >= 4 && shut.every(p => {
+      const S = colaOf(true); S.veh = S0.veh.filter(v => v.wr).map(v => Object.assign({}, v)); S.cola = Object.assign({}, S0.cola); S.colaB = true;
+      const w = Math.min(...S.veh.map(v => v.x)), m = rideAt(S, p, w - 25, 100, 50); return m.crashed && m.why === 'choque';
+    });
+  })],
+  ['choque cola: the free lane and its open side pass the wreck', () => [0, 1, 2].every(() => {
+    const S0 = colaOf(true), shut = closed(S0), open = [0, 1, 2, 3, 4, 5].filter(p => !shut.has(p));
+    return open.length >= 1 && open.some(p => p % 2 === 0) && open.every(p => {
+      const S = colaOf(true); S.veh = S0.veh.filter(v => v.wr).map(v => Object.assign({}, v)); S.cola = Object.assign({}, S0.cola); S.colaB = true;
+      const w = Math.min(...S.veh.map(v => v.x)), m = rideAt(S, p, w - 25, 100, 55); return !m.crashed && m.x > w + 50;
+    });
+  })],
+  ['choque cola: CHOQUE! banner and BUSCA EL CARRIL LIBRE hint', () => {
+    const S = colaOf(true); rideAt(S, 2, S.cola.x0 - 75, 50, 30);
+    return S.banners.some(b => b.s === 'CHOQUE!') && hasFloat(S, 'BUSCA EL CARRIL LIBRE') && !hasFloat(S, 'FRENA PARA COLARTE');
+  }],
+  ['vendors cola still says COLA! and FRENA PARA COLARTE', () => {
+    const S = colaOf(false); rideAt(S, 2, S.cola.x0 - 75, 50, 30); return S.banners.some(b => b.s === 'COLA!') && hasFloat(S, 'FRENA PARA COLARTE');
+  }],
+  /* ---------- no autopilot ---------- */
+  ['no autopilot is left in game.js (no aiCtl, no S.ai branches)', () => !/aiCtl|\.ai\b|\bai\b/.test(fs.readFileSync(require('path').join(__dirname, '..', 'game.js'), 'utf8'))],
+  ['newRun takes (rider, night, score) and always starts with the countdown', () => { const S = G.newRun(1, 2, 500); return S.m.ri === 1 && S.day === 2 && S.score === 500 && S.cd > 2; }],
+  /* ---------- no pickups in the air ---------- */
+  ['flying over a pickup does not collect it', () => {
+    const S = scene(2, 50); S.m.air = true; S.m.h = 30; S.m.vh = 60; S.pick = [{ kind: 'empanada', pos: 2, x: S.m.x }]; const sc = S.score;
+    step(S, 3); return !S.pick[0].got && S.score - sc < 300;
+  }],
+  ['the same pickup is collected on the ground', () => { const S = scene(2, 50); S.pick = [{ kind: 'empanada', pos: 2, x: S.m.x }]; step(S); return S.pick[0].got === true; }],
 ];
 let fail = 0;
 for (let [name, fn] of cases) { let ok; try { ok = fn(); } catch (e) { ok = false; name += '  [' + e.message + ']'; } if (!ok) fail++; console.log((ok ? 'PASS ' : 'FAIL ') + name); }

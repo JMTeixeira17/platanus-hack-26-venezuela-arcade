@@ -7,7 +7,7 @@ global.document = { createElement: () => ({ getContext: () => ({ set fillStyle(v
 const G = new Function(src + '\nreturn { newRun, simStep, GY, STEP, vehSpr };')();
 
 function scene(kind, lane, pos, opts = {}) {
-  const S = G.newRun(0, false, 1, 0);
+  const S = G.newRun(0, 1, 0);
   S.cd = 0; S.spawnT = 1e9; S.haz = []; S.pick = []; S.riv = []; S.vnd = []; S.cop = null;
   for (const k in S.nx) S.nx[k] = 1e9;
   const m = S.m; m.x = 1000; m.v = 0; m.tpos = pos; m.y = G.GY[pos];

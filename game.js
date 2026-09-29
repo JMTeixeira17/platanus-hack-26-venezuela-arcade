@@ -197,7 +197,7 @@ const RIDERS = [
   {name:'LA MOTOTAXISTA',st:[3,5,3],sp:'CAMBIA DE CARRIL MAS RAPIDO',o:{vest:1,p:{C:'#2f6fe0',H:'#e6ff00',T:'#c8e000',P:'#3a3a3a',s:'#8f5a36'}}},
   {name:'REY DEL CABALLITO',st:[2,3,5],sp:'AGUANTA EL CABALLITO ETERNO',o:{band:1,p:{C:'#e03a33',H:'#151515',T:'#f2f2f2',P:'#2f6fe0',s:'#c68a5c'}}},
   {name:'LA INFLUENCER',st:[3,2,3],sp:'EN VIVO: LAS PIRUETAS VALEN DOBLE',o:{stick:1,p:{C:'#8a4fd0',H:'#f28aa0',T:'#f28aa0',P:'#f2f2f2',s:'#e8b48a'}}},
-  {name:'EL ABUELO',st:[2,4,4],sp:'LOS FISCALES LE TIENEN PACIENCIA',o:{beret:1,p:{C:'#9c1f1c',H:'#8a5530',T:'#7a7a7a',P:'#5a3a2a',s:'#c68a5c'}}},
+  {name:'EL ABUELO',st:[2,4,4],sp:'LOS PACOS LE TIENEN PACIENCIA',o:{beret:1,p:{C:'#9c1f1c',H:'#8a5530',T:'#7a7a7a',P:'#5a3a2a',s:'#c68a5c'}}},
 ];
 RIDERS.forEach(r => { r.img = motoSpr(r.o); r.empty = motoSpr(r.o, true); r.rider = riderSpr(r.o); });
 const COP = motoSpr({p:{C:'#f2f2f2',H:'#f2f2f2',T:'#1b4fa0',P:'#1b2a5e',s:'#8f5a36'}});
@@ -265,7 +265,6 @@ const SFX = {
   cop() { tone(740,.2,'sine',.03); tone(980,.2,'sine',.03,0,.24); },
   go() { tone(523,.12,'square',.05); tone(784,.25,'square',.05,0,.12); },
 };
-function sfx(S, n) { if (!S.ai && SFX[n]) SFX[n](); }
 function startEngine() {
   stopEngine(); if (!AC) return;
   try { const o = AC.createOscillator(), f = AC.createBiquadFilter(), g = AC.createGain(); o.type = 'sawtooth'; o.frequency.value = 50; f.type = 'lowpass'; f.frequency.value = 400; g.gain.value = .025; o.connect(f); f.connect(g); g.connect(AC.destination); o.start(); ENG = { o, g }; } catch (e) { ENG = null; }
@@ -288,23 +287,23 @@ const ENDS = {
   pirueta: ['ATERRIZASTE DE CARA','CAE CON LA MOTO DERECHA'],
   guaire: ['CAISTE EN EL GUAIRE','NO TE PEGUES AL BORDE'],
   vendedor: ['TUMBASTE AL DE LAS COTUFAS','TOCA CORNETA Y ESPERA'],
-  preso: ['PRESO!','TE AGARRO EL FISCAL'],
+  preso: ['PRESO!','TE AGARRO EL PACO'],
   tarde: ['WILKERSON SE LA LLEVO','LLEGASTE TARDE POR LA CHAMITA'],
 };
 const occ = v => v.wide ? [v.lane * 2 - 1, v.lane * 2, v.lane * 2 + 1] : [...new Set([v.lane * 2, nearestPos(v.gy)])];
 function fl(S, x, y, s, col) { S.floats.push({ x, y, s, col, t: 0 }); }
 function banner(S, s, col, dur) { S.banners = [{ s, col, t: 0, dur: dur || 2 }]; }
 
-function newRun(ri, ai, day, score) {
+function newRun(ri, day, score) {
   seed = 1 + FL(Math.random() * 2147483000);
   const R = RIDERS[ri];
   const S = {
-    ai, day, t: 0, floats: [], banners: [], shake: 0, parts: [], veh: [], haz: [], pick: [], riv: [], vnd: [], signs: [],
+    day, t: 0, floats: [], banners: [], shake: 0, parts: [], veh: [], haz: [], pick: [], riv: [], vnd: [], signs: [],
     cola: null, colaDone: true, cop: null, time: day > 1 ? 30 : 34, score: score || 0, combo: 0, lastRas: -9, siren: 0, spawnT: 0,
-    dens: 1 + (day - 1) * .25, cam: -MX, edgeT: 0, honk: 0, cd: ai ? 0 : 2.4, lastN: 0, arrived: 0, crashAt: null, rider: null,
+    dens: 1 + (day - 1) * .25, cam: -MX, edgeT: 0, honk: 0, cd: 2.4, lastN: 0, arrived: 0, crashAt: null, rider: null,
     wAcc: 0, dAcc: 0, fct: 0, mt: 0, mi: 0, sirT: 0, fish: 3, end: null,
     m: { x: 0, v: 0, pos: 2, tpos: 2, y: GY[2], a: 0, rot: 0, wheelie: false, bal: 0, air: false, h: 0, vh: 0, airT: 0, inv: 0, turbo: 0, casco: false,
-         crashed: false, honkCd: 0, brake: false, acc: 0, R, ri, moveCd: 0, drunkT: 0, why: '' },
+         crashed: false, honkCd: 0, acc: 0, R, ri, moveCd: 0, drunkT: 0, why: '' },
   };
   S.nx = { evt: 450, pick: 350, grua: 1100 + rnd() * 500, riv: 800 + rnd() * 500, cola: 1900 + rnd() * 600 };
   TRAMOS.forEach((n, i) => S.signs.push({ x: i === 0 ? 150 : i * TRIP / 5, text: n, done: i === 0, last: i === 5 }));
@@ -312,7 +311,7 @@ function newRun(ri, ai, day, score) {
   S.bld = []; for (let x = 0; x < 800;) { const w = 12 + FL(rnd() * 20), h = 14 + FL(rnd() * 30); S.bld.push([x, w, h, pick(['#241e3a','#2c2448','#1f2a44','#302a4a','#262036'])]); x += w + 2; }
   S.ran = []; for (let i = 0; i < 80; i++) S.ran.push([FL(rnd() * 640), FL(rnd() * 10), pick(['#ffd23a','#f2c56b','#ff9a2a','#f2f2f2'])]);
   for (let i = 0; i < 5; i++) spawnVeh(S, 90 + i * 62);
-  if (!ai) banner(S, 'NOCHE ' + day, '#e6ff00', .8);
+  banner(S, 'NOCHE ' + day, '#e6ff00', .8);
   return S;
 }
 function spawnVeh(S, x, forceLane, forceKind) {
@@ -329,52 +328,48 @@ function spawnVeh(S, x, forceLane, forceKind) {
   const m = S.m; if (oc.includes(nearestPos(m.y)) && x < m.x + 30 && x + v.L > m.x - 30) return null;
   S.veh.push(v); return v;
 }
-function aheadDist(S, p) {
-  const m = S.m, front = m.x + 10, back = m.x - 10; let d = 999;
-  for (const v of S.veh) { if (!occ(v).includes(p) || v.x + v.L < back || (v.kind === 'grua' && !v.used)) continue; if (v.x < front + 2) return -1; d = MN(d, v.x - front); }
-  for (const h of S.haz) { if (h.pos !== p || h.x + h.w < back || h.x < front) continue; d = MN(d, h.x - front + (h.kind === 'bache' ? 30 : 0)); }
-  for (const q of S.vnd) { if (nearestPos(q.y) !== p || q.x + 6 < back) continue; d = MN(d, q.x - 6 - front); }
-  return d;
-}
 const sideBlocked = (S, p) => S.veh.some(v => occ(v).includes(p) && !(v.kind === 'grua' && !v.used && v.x > S.m.x) && v.x < S.m.x + 12 && v.x + v.L > S.m.x - 13);
-function nearestAhead(S, p) { let b = null; for (const v of S.veh) if (occ(v).includes(p) && v.x + v.L > S.m.x - 10 && (!b || v.x < b.x)) b = v; return b; }
-function vendAhead(S, p) { let d = 999; for (const q of S.vnd) { if (nearestPos(q.y) !== p || q.x < S.m.x - 8) continue; d = MN(d, q.x - 6 - (S.m.x + 10)); } return d; }
 function spawnRival(S, p) { const q = { x: S.m.x - 130, y: GY[p], tpos: p, v: S.m.v + 48, spr: RIVALS[S.riv.length % 3], honkT: 0, say: null, bumped: false }; S.riv.push(q); return q; }
 function spawnCola(S) {
-  const X0 = S.cam + 345, LEN = 260 + FL(rnd() * 120), n = rnd() < .5 ? 1 : 2, V = [];
+  /* Nada de lo que se ve desaparece: solo se borra lo que esta fuera de pantalla a la derecha y la cola arranca detras de lo que queda */
+  const e = S.cam + W; S.veh = S.veh.filter(v => v.x < e); S.haz = S.haz.filter(h => h.x < e); S.pick = S.pick.filter(p => p.x < e);
+  /* Cola de choque (4 de cada 10): dos carros chocados cierran dos carriles y sus canalitos, queda un solo carril libre y no hay vendedores */
+  const ch = rnd() < .4, fr = rnd() < .5 ? 0 : 2, X0 = MXX(S.cam + 345, ...S.veh.map(v => v.x + v.L + 20)), LEN = 260 + FL(rnd() * 120), E = X0 + LEN - (ch ? 44 : 0), n = ch ? 0 : rnd() < .5 ? 1 : 2, V = [];
   for (let i = 0; i < n; i++) { const p = rnd() < .5 ? 1 : 3; V.push({ x: X0 + 70 + i * (LEN - 110) + rnd() * 30, pos: p, lane: p === 1 ? 0 : 2 }); }
-  S.cola = { x0: X0, x1: X0 + LEN }; S.colaDone = false; S.colaB = false;
-  S.veh = S.veh.filter(v => v.x + v.L < X0 - 20); S.haz = S.haz.filter(h => h.x < X0 - 20); S.pick = S.pick.filter(p => p.x < X0 - 20);
+  S.cola = { x0: X0, x1: X0 + LEN, ch }; S.colaDone = false; S.colaB = false;
   for (let lane = 0; lane < 3; lane++) {
+    if (ch && lane === fr) continue;
     let x = X0 + rnd() * 8; const gaps = V.filter(q => q.lane === lane).map(q => q.x);
-    while (x < X0 + LEN) {
+    while (x < E) {
       const k = rnd() < .6 ? 'car' : rnd() < .5 ? 'suv' : 'viejo', sp = vehSpr(k, k === 'car' ? pick(VCOL) : k === 'viejo' ? '#d8c28a' : '#474b58');
+      if (ch && x + sp.L > E - 30) break;
       const gp = gaps.find(gx => x < gx + 16 && x + sp.L > gx - 16);
       if (gp != null) { x = gp + 16; continue; }
       S.veh.push({ kind: k, img: sp.img, L: sp.L, gb: sp.gb, lane, gy: GY[lane * 2], x, v: 0, base: 0, wide: false, bubble: null, bubbleT: 0, cola: true });
       x += sp.L + 6 + rnd() * 5;
     }
+    if (ch) S.veh.push({ kind: 'car', img: vehSpr('car', pick(VCOL)).img, L: 36, gb: 16, lane, gy: GY[lane * 2], x: E, v: 0, base: 0, wide: true, wr: lane === (fr ? 0 : 1) ? .5 : -.5, bubble: null, bubbleT: 0 });
   }
   const says = ['AGUA, AGUA, AGUA!','COTUFAS, TOSTONES!','CARAMELO, CHUPETA!','CARGADOR, CARGADOR!'];
   for (const q of V) S.vnd.push({ x: q.x, y: GY[q.pos], ty: GY[q.pos], aside: q.lane * 2, spr: rnd() < .5 ? AGUA : SPV, say: pick(says), sayT: 0, st: 0, ph: rnd() * 6 });
 }
 function crash(S, why, veh) {
   const m = S.m; if (m.crashed || S.arrived) return;
-  if (m.casco && ['choque','hueco','pirueta','vendedor'].includes(why)) { m.casco = false; m.inv = 1.6; S.shake = .4; fl(S, MX, m.y - 40, 'SE PARTIO EL CASCO!', '#f2f2f2'); sfx(S, 'bump'); if (veh) veh.ghosted = true; return; }
+  if (m.casco && ['choque','hueco','pirueta','vendedor'].includes(why)) { m.casco = false; m.inv = 1.6; S.shake = .4; fl(S, MX, m.y - 40, 'SE PARTIO EL CASCO!', '#f2f2f2'); SFX.bump(); if (veh) veh.ghosted = true; return; }
   m.crashed = true; m.why = why; m.wheelie = false; m.air = false; m.h = 0; S.crashAt = S.t;
   S.end = ENDS[why === 'choque' && veh && (veh.kind === 'bus' || veh.kind === 'gandola') ? veh.kind : why];
-  if (why !== 'preso' && why !== 'tarde') { S.rider = { x: m.x, y: m.y - 12, vx: m.v + (why === 'espaldas' ? -70 : why === 'guaire' ? -10 : 45), vy: why === 'guaire' ? -40 : -80, rot: 0 }; S.shake = .6; sfx(S, why === 'guaire' ? 'splash' : 'crash'); }
-  else { S.rider = null; sfx(S, 'cop'); }
-  if (!S.ai) stopEngine();
+  if (why !== 'preso' && why !== 'tarde') { S.rider = { x: m.x, y: m.y - 12, vx: m.v + (why === 'espaldas' ? -70 : why === 'guaire' ? -10 : 45), vy: why === 'guaire' ? -40 : -80, rot: 0 }; S.shake = .6; SFX[why === 'guaire' ? 'splash' : 'crash'](); }
+  else { S.rider = null; SFX.cop(); }
+  stopEngine();
 }
 function launch(S, v) {
   const m = S.m; v.used = true; m.air = true; m.airT = 0; m.vh = 110; m.h = 0; m.rot = 0; m.wheelie = false; m.v += 15;
-  fl(S, MX, m.y - 42, 'A VOLAR!', '#f2f2f2'); sfx(S, 'jump');
+  fl(S, MX, m.y - 42, 'A VOLAR!', '#f2f2f2'); SFX.jump();
   if (S.cop) S.cop.lost = true;
 }
 function honk(S) {
   const m = S.m; if (m.honkCd > 0 || m.crashed) return;
-  m.honkCd = .5; S.honk = .9; sfx(S, 'honk'); S.siren = MN(1, S.siren + .02);
+  m.honkCd = .5; S.honk = .9; SFX.honk(); S.siren = MN(1, S.siren + .02);
   const p = nearestPos(m.y);
   const v = S.veh.filter(o => occ(o).includes(p) && o.x > m.x && o.x - m.x < 110 && !o.cola).sort((a, b) => a.x - b.x)[0];
   if (v) {
@@ -386,36 +381,18 @@ function honk(S) {
   }
   for (const q of S.vnd) if (q.x > m.x && q.x - m.x < 90 && nearestPos(q.y) === p && !q.st) q.st = S.t;
 }
-function aiCtl(S) {
-  const m = S.m; m.brake = false; m.acc = 0;
-  const cp = nearestPos(m.y);
-  const hz = S.haz.find(h => h.kind === 'hueco' && h.pos === cp && h.x + h.w > m.x - 12 && h.x - (m.x + 10) < 44);
-  m.wheelie = !!hz || (m.wheelie && m.bal < .5 && rnd() < .995) || (!m.wheelie && rnd() < .002);
-  if (m.bal > .8 && !hz) m.wheelie = false;
-  if (AB(m.y - GY[m.tpos]) > .8) return;
-  if (m.air || m.inv > 0) return;
-  if (cp === 5) { if (!sideBlocked(S, 4)) m.tpos = 4; return; }
-  const rb = S.riv.find(q => !q.bumped && AB(q.y - m.y) < 6 && q.x < m.x && m.x - q.x < 80);
-  if (rb) { for (const n of [cp - 1, cp + 1]) { if (n < 0 || n > 4 || sideBlocked(S, n) || aheadDist(S, n) < 40) continue; m.tpos = n; return; } }
-  const dc = aheadDist(S, cp); let best = cp, bd = dc;
-  for (const dir of [-1, 1]) {
-    const n = cp + dir; if (n < 0 || n > 4 || sideBlocked(S, n) || aheadDist(S, n) < 18) continue;
-    let dn = aheadDist(S, n); if (n % 2) dn += 12;
-    const n2 = n + dir; if (dn > 14 && n2 >= 0 && n2 <= 4) dn = MXX(dn, aheadDist(S, n2) - 10);
-    if (dn > bd + 14) { bd = dn; best = n; }
-  }
-  if (dc < 100 && best !== cp) m.tpos = best;
-  if (dc < 44 && m.tpos === cp) { m.brake = true; if (m.honkCd <= 0 && rnd() < .05) honk(S); }
-  if (vendAhead(S, cp) < 60 && m.honkCd <= 0) honk(S);
-}
 function playerCtl(S, dt) {
   const m = S.m; m.moveCd -= dt;
   if (AB(m.y - GY[m.tpos]) < 4) {
     m.sq = null;
     const d = (I.pU() || (I.U() && m.moveCd <= 0)) && m.tpos > 0 ? -1 : (I.pD() || (I.D() && m.moveCd <= 0)) && m.tpos < 5 ? 1 : 0, n = m.tpos + d;
     /* Colarse: desde un canalito o el hombrillo, bien lento, se cruza el carril trancado hasta el canalito libre de al lado */
-    if (d && m.v < 50 && !m.air && m.tpos % 2 && sideBlocked(S, n) && n + d >= 0 && n + d <= 5 && !sideBlocked(S, n + d)) { m.tpos = n + d; m.sq = n; m.moveCd = .2; fl(S, MX, m.y - 40, 'TE COLASTE!', '#e6ff00'); sfx(S, 'ras'); }
-    else if (d) { m.tpos = n; m.moveCd = .2; }
+    if (d) {
+      if (m.v < 50 && !m.air && m.tpos % 2 && sideBlocked(S, n) && n + d >= 0 && n + d <= 5 && !sideBlocked(S, n + d)) { m.tpos = n + d; m.sq = n; fl(S, MX, m.y - 40, 'TE COLASTE!', '#e6ff00'); SFX.ras(); }
+      else m.tpos = n;
+      /* Zigzag: cada cambio de canal le borra al paco lo que llevaba para agarrarte */
+      m.moveCd = .2; if (S.cop) S.cop.catchT = 0;
+    }
   }
   if (m.air) { if (I.L()) m.rot -= 7 * dt; if (I.R()) m.rot += 7 * dt; m.acc = 0; }
   else { m.wheelie = I.A(); m.acc = I.R() ? 1 : I.L() ? -1 : 0; }
@@ -446,14 +423,14 @@ function simStep(S, dt) {
   if (S.shake > 0) S.shake -= dt;
   if (S.cd > 0) {
     S.cd -= dt; const n = Math.ceil(S.cd / .8);
-    if (S.cd <= 0) { banner(S, 'ARRANCA!', '#e6ff00', 1.2); sfx(S, 'go'); }
-    else if (n !== S.lastN && S.t > .8) { S.lastN = n; banner(S, String(n), '#f2f2f2', .7); sfx(S, 'blip'); }
+    if (S.cd <= 0) { banner(S, 'ARRANCA!', '#e6ff00', 1.2); SFX.go(); }
+    else if (n !== S.lastN && S.t > .8) { S.lastN = n; banner(S, String(n), '#f2f2f2', .7); SFX.blip(); }
     return;
   }
   if (!m.crashed && !S.arrived) { S.time = MXX(0, S.time - dt); if (S.time <= 0) crash(S, 'tarde'); }
   director(S);
   const inCola = S.cola && !S.colaDone;
-  if (inCola && !S.colaB && m.x + 10 > S.cola.x0 - 60) { S.colaB = true; banner(S, 'COLA!', '#ff9a2a', 1.4); fl(S, MX, m.y - 40, 'FRENA PARA COLARTE', '#ff9a2a'); }
+  if (inCola && !S.colaB && m.x + 10 > S.cola.x0 - 60) { S.colaB = true; const k = S.cola.ch; banner(S, k ? 'CHOQUE!' : 'COLA!', '#ff9a2a', 1.4); fl(S, MX, m.y - 40, k ? 'BUSCA EL CARRIL LIBRE' : 'FRENA PARA COLARTE', '#ff9a2a'); }
   if (inCola && m.x - 10 > S.cola.x1) { S.colaDone = true; for (const v of S.veh) if (v.cola) v.base = 35 + rnd() * 20; }
   S.spawnT -= dt;
   if (S.spawnT <= 0 && !(S.cola && !S.colaDone)) {
@@ -474,14 +451,12 @@ function simStep(S, dt) {
   S.veh = S.veh.filter(v => v.x + v.L > S.cam - 120); S.haz = S.haz.filter(h => h.x > S.cam - 60); S.pick = S.pick.filter(p => p.x > S.cam - 60); S.vnd = S.vnd.filter(q => q.x > S.cam - 60);
   if (inCola && rnd() < .02) { const cv = S.veh.filter(v => v.cola && v.x - S.cam > 20 && v.x - S.cam < 300); if (cv.length) { const v = pick(cv); if (v.bubbleT <= 0) { v.bubble = pick(['PIIII!','MUEVETE!','#@%!']); v.bubbleT = 1.2; } } }
   m.honkCd -= dt; if (S.honk > 0) S.honk -= dt;
-  if (!m.crashed && !S.arrived) { if (S.ai) aiCtl(S); else playerCtl(S, dt); }
+  if (!m.crashed && !S.arrived) playerCtl(S, dt);
   if (m.turbo > 0 && !m.crashed && !m.air) { m.drunkT -= dt; if (m.drunkT <= 0) { m.drunkT = .7 + rnd() * .5; const n = m.tpos + (rnd() < .5 ? -1 : 1); if (n >= 0 && n <= 5 && AB(m.y - GY[m.tpos]) < 2) m.tpos = n; } }
   const top = 100 + m.R.st[0] * 8;
-  let tv = S.ai ? top * .95 : (m.acc > 0 ? top : m.acc < 0 ? 40 : top * .8);
-  tv += (m.turbo > 0 ? 55 : 0) + (m.wheelie ? 12 : 0);
-  if (m.brake) { const v = nearestAhead(S, nearestPos(m.y)), d = aheadDist(S, nearestPos(m.y)); tv = v ? (d < 26 ? v.v * .4 : v.v) : 60; }
-  if (inCola && m.x + 10 > S.cola.x0 - 30 && m.x < S.cola.x1) tv = MN(tv, 55);
-  if (S.ai) { const vd = vendAhead(S, nearestPos(m.y)); if (vd < 60) tv = MN(tv, MXX(0, (vd - 8) * 1.6)); }
+  let tv = m.acc > 0 ? top : m.acc < 0 ? 40 : top * .8;
+  tv += (m.turbo > 0 ? 55 : 0) + (m.wheelie ? S.cop && !S.cop.lost ? 30 : 12 : 0);
+  if (inCola && !S.cola.ch && m.x + 10 > S.cola.x0 - 30 && m.x < S.cola.x1) tv = MN(tv, 55);
   if (S.arrived) tv = 60;
   if (m.crashed) m.v *= Math.exp(-(m.why === 'preso' ? 4 : 1.8) * dt); else m.v += clamp(tv - m.v, -260 * dt, 90 * dt);
   m.x += m.v * dt;
@@ -495,21 +470,21 @@ function simStep(S, dt) {
       /* El choque sigue al dibujo (v.gy): los anchos tapan el canalito de atras, nunca el de adelante. */
       const dy = m.y - v.gy, lo = v.wide ? -22 : -7.5;
       if (v.kind === 'grua' && !v.used && v.x > m.x - 4 && AB(dy) < 22) { launch(S, v); break; }
-      if (dy <= lo || dy >= 7.5) { if (dy > lo - 16 && dy < 23.5) v.adj = true; continue; }
+      if (dy <= lo || dy >= (v.wr ? 22 : 7.5)) { if (dy > lo - 16 && dy < 23.5) v.adj = true; continue; }
       if (m.inv > 0 || v.ghosted) { if (!v.ghosted) { v.ghosted = true; if (m.inv > 2) { fl(S, MX, m.y - 36, 'NADA TE TOCA!', '#e6ff00'); S.siren = MN(1, S.siren + .15); } v.bubble = '#@%!'; v.bubbleT = 1.4; } }
       else { crash(S, 'choque', v); break; }
     }
     for (const v of S.veh) if (!v.passed && v.x + v.L < m.x - 10) {
       v.passed = true;
-      if (v.adj && !m.crashed) { S.combo++; S.lastRas = t; const pts = 50 * MN(S.combo, 8); S.score += pts; fl(S, MX, m.y - 38 - (S.fct++ % 2) * 7, 'RASANTE +' + pts, '#e6ff00'); sfx(S, 'ras'); S.siren = MN(1, S.siren + .03 * (m.ri === 4 ? .5 : 1)); if (rnd() < .55) { v.bubble = pick(INSULTS); v.bubbleT = 1.5; } }
+      if (v.adj && !m.crashed) { S.combo++; S.lastRas = t; const pts = 50 * MN(S.combo, 8); S.score += pts; fl(S, MX, m.y - 38 - (S.fct++ % 2) * 7, 'RASANTE +' + pts, '#e6ff00'); SFX.ras(); S.siren = MN(1, S.siren + .03 * (m.ri === 4 ? .5 : 1)); if (rnd() < .55) { v.bubble = pick(INSULTS); v.bubbleT = 1.5; } }
     }
     if (!m.air && !m.crashed) for (const h of S.haz) {
       if (h.hit || h.pos !== ep || !(h.x < m.x + 10 && h.x + h.w > m.x - 10)) continue; h.hit = true;
-      if (h.kind === 'hueco') { if (m.wheelie) { S.score += 200; fl(S, MX, m.y - 44, 'ALCANTARILLA! +200', '#e6ff00'); sfx(S, 'land'); } else crash(S, 'hueco'); }
-      else { m.v *= .78; S.shake = .25; fl(S, MX, m.y - 30, 'BACHE!', '#f2f2f2'); sfx(S, 'bump'); }
+      if (h.kind === 'hueco') { if (m.wheelie) { S.score += 200; fl(S, MX, m.y - 44, 'ALCANTARILLA! +200', '#e6ff00'); SFX.land(); } else crash(S, 'hueco'); }
+      else { m.v *= .78; S.shake = .25; fl(S, MX, m.y - 30, 'BACHE!', '#f2f2f2'); SFX.bump(); }
     }
-    for (const pk of S.pick) {
-      if (pk.got || pk.pos !== ep || !(pk.x - 4 < m.x + 10 && pk.x + 5 > m.x - 10)) continue; pk.got = true; sfx(S, pk.kind === 'estampita' ? 'amen' : 'pick');
+    if (!m.air) for (const pk of S.pick) {
+      if (pk.got || pk.pos !== ep || !(pk.x - 4 < m.x + 10 && pk.x + 5 > m.x - 10)) continue; pk.got = true; SFX[pk.kind === 'estampita' ? 'amen' : 'pick']();
       if (pk.kind === 'estampita') { m.inv = 5.5; S.bless = 3; banner(S, 'ESTAMPITA!', '#e6ff00', 1.5); }
       else if (pk.kind === 'anis') { m.turbo = 4; m.drunkT = .6; banner(S, 'ANIS!', '#f2f2f2', 1.4); fl(S, MX, m.y - 48, 'ANIS CARTUJO PARA GENTE DE LUJOO!!', '#f2f2f2'); fl(S, MX, m.y - 38, 'TURBO... PERO CURDO', '#f2c56b'); }
       else if (pk.kind === 'guayoyo') { S.time += 5; banner(S, 'GUAYOYO!', '#f2c56b', 1.2); fl(S, MX, m.y - 40, '+5 SEG', '#3fd0e0'); }
@@ -532,10 +507,10 @@ function simStep(S, dt) {
     if (ahead && (q.x > m.x || q.bumped)) { const n = [q.tpos - 1, q.tpos + 1].find(n => n >= 0 && n <= 4 && !S.veh.some(v => occ(v).includes(n) && v.x < q.x + 50 && v.x + v.L > q.x - 12)); if (n != null) q.tpos = n; else qv = MN(qv, ahead.v); }
     q.v += clamp(qv - q.v, -200 * dt, 120 * dt); q.x += q.v * dt; q.y += clamp(GY[q.tpos] - q.y, -100 * dt, 100 * dt);
     if (q.honkT > 0) q.honkT -= dt;
-    if (!q.bumped && q.x < m.x && m.x - q.x < 70 && AB(q.y - m.y) < 6 && q.honkT <= 0) { q.honkT = 1.3; q.say = 'PIPIIII!'; sfx(S, 'horn'); }
+    if (!q.bumped && q.x < m.x && m.x - q.x < 70 && AB(q.y - m.y) < 6 && q.honkT <= 0) { q.honkT = 1.3; q.say = 'PIPIIII!'; SFX.horn(); }
     if (!q.bumped && !m.crashed && !m.air && AB(q.y - m.y) < 6 && q.x + 12 > m.x - 10 && q.x < m.x) {
       q.bumped = true; q.say = '#@%!'; q.honkT = 1.2;
-      if (m.inv <= 0) { m.tpos = m.tpos < 5 ? m.tpos + 1 : m.tpos - 1; S.shake = .4; fl(S, MX, m.y - 38, 'EPA!', '#f2f2f2'); sfx(S, 'bump'); }
+      if (m.inv <= 0) { m.tpos = m.tpos < 5 ? m.tpos + 1 : m.tpos - 1; S.shake = .4; fl(S, MX, m.y - 38, 'EPA!', '#f2f2f2'); SFX.bump(); }
     }
   }
   S.riv = S.riv.filter(q => q.x < S.cam + 380 && q.x > S.cam - 200);
@@ -550,7 +525,7 @@ function simStep(S, dt) {
     if (m.h <= 0 && m.vh < 0) {
       m.h = 0; m.air = false; const T = 2 * Math.PI, aa = ((m.rot % T) + T) % T, ok = aa < .45 || aa > T - .45, spins = RO(AB(m.rot) / T); m.a = 0;
       if (ok) {
-        const pts = (300 + spins * 500) * (m.ri === 3 ? 2 : 1); S.score += pts; sfx(S, 'land');
+        const pts = (300 + spins * 500) * (m.ri === 3 ? 2 : 1); S.score += pts; SFX.land();
         banner(S, spins ? (spins > 1 ? 'MORTAL X' + spins + '!' : 'PIRUETA 360!') : 'VOLADO!', '#e6ff00', 1.5); fl(S, MX, m.y - 40, '+' + pts, '#e6ff00');
         if (S.cop) { S.siren = 0; fl(S, MX, m.y - 50, 'LO PERDISTE!', '#5a9bff'); }
       } else crash(S, 'pirueta');
@@ -567,30 +542,31 @@ function simStep(S, dt) {
   if (m.turbo > 0 && !m.crashed && rnd() < .5) S.parts.push({ x: m.x - 14, y: m.y - 4 - m.h, vx: -60, vy: 0, l: .25, c: pick(['#ff9a2a','#ffd23a']) });
   for (const q of S.parts) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 120 * dt; q.l -= dt; } S.parts = S.parts.filter(q => q.l > 0);
   if (m.inv > 0) m.inv -= dt; if (m.turbo > 0) m.turbo -= dt; if (S.bless > 0) S.bless = MXX(0, S.bless - dt);
-  if (!S.cop && S.siren >= 1 && !m.crashed && !S.arrived) { S.cop = { x: m.x - 160, y: m.y, tpos: nearestPos(m.y), v: m.v + 21, lost: false, t: 0, catchT: 0, say: -9, bubbleT: 0 }; banner(S, 'EL FISCAL!', '#5a9bff', 1.6); }
+  if (!S.cop && S.siren >= 1 && !m.crashed && !S.arrived) { S.cop = { x: m.x - 160, y: m.y, tpos: nearestPos(m.y), v: MN(135, m.v + 21), lost: false, t: 0, catchT: 0, say: -9, bubbleT: 0 }; banner(S, 'EL PACO!', '#5a9bff', 1.6); }
   const c = S.cop;
   if (c) {
     c.t += dt;
-    if (!c.lost && c.t > 9) { c.lost = true; S.siren = 0; fl(S, MX, m.y - 50, 'EL FISCAL SE CANSO', '#5a9bff'); }
+    if (!c.lost && c.t > 9) { c.lost = true; S.siren = 0; fl(S, MX, m.y - 50, 'EL PACO SE CANSO', '#5a9bff'); }
     const mp = nearestPos(m.y);
-    if (!c.lost && AB(c.y - GY[c.tpos]) < 1 && c.tpos !== mp) { const n = c.tpos + Math.sign(mp - c.tpos); if (!S.veh.some(v => occ(v).includes(n) && v.x < c.x + 14 && v.x + v.L > c.x - 14)) c.tpos = n; else c.catchT = 0; }
+    if (!c.lost && AB(c.y - GY[c.tpos]) < 1 && c.tpos !== mp) { const n = c.tpos + Math.sign(mp - c.tpos); if (!S.veh.some(v => occ(v).includes(n) && v.x < c.x + 14 && v.x + v.L > c.x - 14)) { c.tpos = n; c.v *= .7; } else c.catchT = 0; }
     c.y += clamp(GY[c.tpos] - c.y, -90 * dt, 90 * dt);
-    let cv = c.lost ? 50 : c.x < m.x - 40 ? m.v + 21 : m.v + 4; if (c.x > m.x - 16) cv = MN(cv, m.v);
+    /* El paco tiene tope: acelerando en caballito se le escapa */
+    let cv = MN(135, c.lost ? 50 : c.x < m.x - 40 ? m.v + 21 : m.v + 6); if (c.x > m.x - 16) cv = MN(cv, m.v);
     const bl = S.veh.find(v => occ(v).includes(c.tpos) && v.x > c.x && v.x - (c.x + 10) < 26); if (bl) cv = MN(cv, bl.v);
     c.v += clamp(cv - c.v, -200 * dt, 120 * dt); c.x += c.v * dt;
     if (!c.lost && !m.crashed && !m.air && nearestPos(c.y) === mp && m.x - c.x < 30 && m.x - c.x > 0) { c.catchT += dt; if (c.catchT > 1.2) crash(S, 'preso'); } else c.catchT = MXX(0, c.catchT - dt);
     if (!c.lost && t - c.say > 2.6) { c.say = t; c.bubbleT = 1.4; }
     if (c.bubbleT > 0) c.bubbleT -= dt;
-    if (!c.lost && !S.ai) { S.sirT -= dt; if (S.sirT <= 0) { S.sirT = .5; SFX.cop(); } }
+    if (!c.lost) { S.sirT -= dt; if (S.sirT <= 0) { S.sirT = .5; SFX.cop(); } }
     if (c.lost && c.x < S.cam - 60) S.cop = null;
   }
   for (const s of S.signs) if (!s.done && s.x < m.x && !m.crashed) {
     s.done = true;
-    if (s.last) { S.arrived = t; m.inv = 99; const b = Math.ceil(S.time) * 50; S.score += b; banner(S, 'LA RECOGISTE! A RUMBEAR!', '#e6ff00', 3); fl(S, MX, m.y - 44, 'BONO DE TIEMPO +' + b, '#3fd0e0'); sfx(S, 'pick'); }
-    else { S.time += 12; fl(S, MX, m.y - 48, s.text + ' +12 SEG', '#3fd0e0'); sfx(S, 'blip'); }
+    if (s.last) { S.arrived = t; m.inv = 99; const b = Math.ceil(S.time) * 50; S.score += b; banner(S, 'LA RECOGISTE! A RUMBEAR!', '#e6ff00', 3); fl(S, MX, m.y - 44, 'BONO DE TIEMPO +' + b, '#3fd0e0'); SFX.pick(); }
+    else { S.time += 12; fl(S, MX, m.y - 48, s.text + ' +12 SEG', '#3fd0e0'); SFX.blip(); }
   }
   S.fish -= dt; if (S.fish < -1.2) S.fish = 5 + rnd() * 5;
-  if (!S.ai && !m.crashed) {
+  if (!m.crashed) {
     if (ENG) try { ENG.o.frequency.value = 45 + m.v * .5 + (m.wheelie ? 25 : 0); } catch (e) {}
     S.mt += dt;
     if (S.mt >= .14) { S.mt -= .14; const i = S.mi++ % 16; if (BASSN[i]) tone(mtof(BASSN[i]), .12, 'triangle', .06); if (LEADN[i] && S.mi % 64 >= 32) tone(mtof(LEADN[i] + 12), .09, 'square', .018); }
@@ -668,6 +644,16 @@ function drawBless(S) {
   F('#aebcd8'); Q(x - 5, y + 4, 10, 1); Q(x - 3, y + 10, 1, 1); Q(x + 2, y + 10, 1, 1); Q(x - 2, y + 12, 4, 1); Q(x - 1, y + 16, 2, 8);
   X.globalAlpha = a; txt('DIOS TE BENDIGA, HIJO', x - 17, y + 12, '#fff3b0', 1, 'r'); X.globalAlpha = 1;
 }
+/* Choque: los dos carros torcidos se tocan de frente, con candela, humo gris que sube, intermitentes y conos */
+function drawWreck(S, v, x, y) {
+  const u = v.wr > 0;
+  X.save(); X.translate(x + 18, y + (u ? 13 : 5)); X.rotate(v.wr); X.drawImage(v.img, -18, -9); if (FL(S.t * 4) % 2) { F('#ff9a2a'); Q(-18, -1, 2, 2); Q(16, -1, 2, 2); } X.restore();
+  for (let i = 0; i < 3; i++) { const cx = x - 24 + i * 8, cy = RO(v.gy + 3 - i * 3); F('#ff9a2a'); Q(cx, cy - 6, 1, 2); Q(cx - 1, cy - 4, 3, 3); Q(cx - 2, cy - 1, 5, 1); F('#f2f2f2'); Q(cx - 1, cy - 3, 3, 1); }
+  if (u) {
+    F(FL(S.t * 9) % 2 ? '#ffd23a' : '#ff5a3a'); Q(x + 31, y + 19, 3, 3); Q(x + 32, y + 17, 1, 2);
+    for (let i = 0; i < 5; i++) { const k = (S.t * .45 + i / 5) % 1, r = 3 + RO(k * 6); F('rgba(200,200,210,' + (.8 - k * .8) + ')'); Q(RO(x + 30 + SN(i * 2 + S.t) * 3 - r / 2), RO(y + 16 - k * 34), r, r); }
+  }
+}
 function drawRun(S) {
   const m = S.m, c = S.cam, chx = RO(S.signs[5].x + 200 - c);
   X.save();
@@ -681,7 +667,7 @@ function drawRun(S) {
     else { F('#15171d');Q(hx,gy-1,10,3);Q(hx+2,gy-2,5,1); }
   }
   const ents = [];
-  for (const v of S.veh) ents.push({ y: v.gy, f: () => { const vx = RO(v.x - c), top = RO(v.gy - v.gb); if (vx > 340 || vx + v.L < -20) return; X.drawImage(v.img, vx, top); if (v.kind === 'gandola') txt('PLATANUS HACK', vx + 36, top + 10, '#151515', 1, 'c', null); if (v.kind === 'grua' && FL(S.t * 6) % 2) { F('#ff9a2a'); Q(vx + 62, top + 4, 3, 2); } } });
+  for (const v of S.veh) ents.push({ y: v.gy, f: () => { const vx = RO(v.x - c), top = RO(v.gy - v.gb); if (vx > 340 || vx + v.L < -20) return; if (v.wr) drawWreck(S, v, vx, top); else X.drawImage(v.img, vx, top); if (v.kind === 'gandola') txt('PLATANUS HACK', vx + 36, top + 10, '#151515', 1, 'c', null); if (v.kind === 'grua' && FL(S.t * 6) % 2) { F('#ff9a2a'); Q(vx + 62, top + 4, 3, 2); } } });
   for (const pk of S.pick) if (!pk.got) ents.push({ y: GY[pk.pos], f: () => drawPickup(pk.kind, pk.x - c, GY[pk.pos] - 4 - RO(SN(S.t * 5) * 1.5)) });
   for (const q of S.vnd) ents.push({ y: q.y, f: () => { const vx = q.x - c; if (vx < -20 || vx > 340) return; F('rgba(0,0,0,.3)'); Q(RO(vx) - 5, RO(q.y) - 1, 10, 2); dS(q.spr, vx, q.y - (FL(q.ph * 3) % 2)); } });
   for (const q of S.riv) ents.push({ y: q.y, f: () => { const qx = q.x - c; if (qx < -30 || qx > 340) return; F('rgba(0,0,0,.35)'); Q(RO(qx) - 10, RO(q.y) - 1, 22, 2); drawMotoAt(q.spr, qx, q.y, 0, 'r'); } });
@@ -697,7 +683,7 @@ function drawRun(S) {
     if (m.casco && !m.crashed) { F('#e03a33'); Q(RO(sx) + 8, RO(yy) - 24, 3, 2); }
     if (!m.crashed && (m.wheelie || m.bal > .05)) { const bx = RO(sx) - 9, by = RO(yy) - 33; F('#151515'); Q(bx, by, 19, 4); F(m.bal < .5 ? '#3fbf4f' : m.bal < .8 ? '#ffd23a' : (FL(S.t * 8) % 2 ? '#e03a33' : '#7a1414')); Q(bx + 1, by + 1, RO(17 * clamp(m.bal, 0, 1)), 2); }
     if (S.edgeT > 0 && !m.crashed) { if (FL(S.t * 8) % 2 === 0) txt('!', sx, yy - 44, '#ff5a3a', 2, 'c'); F('#151515'); Q(RO(sx) - 9, RO(yy) - 28, 19, 3); F('#ff5a3a'); Q(RO(sx) - 8, RO(yy) - 27, RO(17 * clamp(S.edgeT / 1.1, 0, 1)), 1); }
-    if (m.air && !S.ai) { const T = 2 * Math.PI, aa = ((m.rot % T) + T) % T, ok = aa < .45 || aa > T - .45; txt(ok ? 'DERECHO' : 'GIRA!', sx, yy - 40, ok ? '#3fbf4f' : '#ff9a2a', 1, 'c'); }
+    if (m.air) { const T = 2 * Math.PI, aa = ((m.rot % T) + T) % T, ok = aa < .45 || aa > T - .45; txt(ok ? 'DERECHO' : 'GIRA!', sx, yy - 40, ok ? '#3fbf4f' : '#ff9a2a', 1, 'c'); }
   } });
   ents.sort((a, b) => a.y - b.y); for (const e of ents) e.f();
   for (const q of S.parts) { F(q.c); Q(RO(q.x - c), RO(q.y), 1, 1); }
@@ -823,10 +809,10 @@ function tick(dt) {
     if ((I.pA() || I.pS()) && MT > .2) { MODE = 'intro'; MT = 0; }
   } else if (MODE === 'intro') {
     /* Platanus Hack: dura 2.5 s y se salta con START o boton 1 */
-    if (MT > 2.5 || ((I.pA() || I.pS()) && MT > .3)) { RUN = newRun(SEL, false, 1, 0); MODE = 'play'; MT = 0; startEngine(); }
+    if (MT > 2.5 || ((I.pA() || I.pS()) && MT > .3)) { RUN = newRun(SEL, 1, 0); MODE = 'play'; MT = 0; startEngine(); }
   } else if (MODE === 'play') {
     simStep(RUN, dt);
-    if (RUN.arrived && RUN.t > RUN.arrived + 3.2) { RUN = newRun(RUN.m.ri, false, RUN.day + 1, RUN.score); startEngine(); }
+    if (RUN.arrived && RUN.t > RUN.arrived + 3.2) { RUN = newRun(RUN.m.ri, RUN.day + 1, RUN.score); startEngine(); }
     else if (RUN.crashAt != null && RUN.t > RUN.crashAt + 2.2) { MODE = 'over'; MT = 0; }
   } else if (MODE === 'over') {
     simStep(RUN, dt);
