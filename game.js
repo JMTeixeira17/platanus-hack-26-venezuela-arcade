@@ -777,7 +777,8 @@ function tick(dt) {
       else { const n = NAME.l.map(k => LETTERS[k]).join(''), e = { n, s: RUN.score }; RANK = fixRank(RANK.concat([e])); NEWPOS = RANK.indexOf(RANK.find(r => r.n === n && r.s === RUN.score)); saveRank(); MODE = 'rank'; MT = 0; SFX.pick(); }
     }
   } else if (MODE === 'rank') {
-    if (MT > 7 || ((I.pS() || I.pA()) && MT > .6)) { MODE = 'title'; MT = 0; ATT = null; }
+    /* La demo del titulo se crea ya: render() la dibuja en este mismo cuadro y con null el juego se congelaba. */
+    if (MT > 7 || ((I.pS() || I.pA()) && MT > .6)) { MODE = 'title'; MT = 0; ATT = newRun(FL(Math.random() * 5), true, 1, 0); }
   }
 }
 function render() {
