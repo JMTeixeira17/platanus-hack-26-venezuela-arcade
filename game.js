@@ -216,7 +216,10 @@ function vehSpr(kind, col) {
    n = codigo - 35; n < 4*(colores) es el color n/4+1 con largo n%4+1, si no es transparente con largo n-4*(colores)+1. */
 function unrle(d) { const o = [], m = HK.length * 4 - 4; for (const c of d) { const n = c.charCodeAt() - 35; for (let l = n < m ? n % 4 : n - m; l >= 0; l--) o.push(HK[n < m ? n / 4 + 1 | 0 : 0]); } return o; }
 const HW = 63, HH = 69, HK = '.kqOwGurRXsSWxbn', HF = unrle("~~t(+~z(+~z-~z/37~z/37~z/37~y047~w067~v/637~v><?~v;2;?~v><?~vBA~i&#f/637~h#E&d/637~g#C/C&$bJHK7~f#D&&#aNM7d/O~#>>;%`JHK7cSOS{=&&JbJGKf#z=?&&&7bIKg#z?`;&%G&GaIKi#{<&%H%GaIKi#z<_&%GK1#`IKj#z?a&$HLG_JGKcM`%S~_%KIOJI#NNK&=~_/IKJG#NNM$`>/'}0JH#NNLd>0(|1I#NMi>/(+}2LPKm?=(,e<t20Po>,/Sa>;u2/Pl=?>;0>;@v2/Qh>>;A>@FFq20Pg/O><@_=@SD&$C#Dp2/Qe/O>=?a?TO/S$2&Do20P`ZW[>=?dSP/S0D1%Dn20PZY[W>;?eCSP/SO%CP%Co2/QZX[[>?eD#SP/SO%CP$Dn/X1PZX[[=?fC#0SP/SP#OCO%CnZZZX[[;@`CdC#/C#SO/T#S$P$Dn[[ZX[[Y[[?OSO_CdC#/CPSO/SOT#CS$Dn1^[[;Y[[VOCdC#/$PSO/O#S#CS$DlD#2/>Y[[VSCOcC#/$O#SQT#CS$DjD&$><Y[S_P_SCScC#/C#SR#UCS$DiC&$>>Y[SO/SODSc$OC#T$U$T$Dg<&;?>>?Y[SOTODSc$PVU$CS$Dg=$;?`>;A_Y[S_OC_CTd$OC&S$CT$De>=?a=@bY[VUCd%PC$S#CT%Ce><@_EA'+a/Y[VEf%UDU%De=A_E&C2/&%DOi&V&DfAaD$21Q&&Sk&&$Df;cC20RRO&$o&$Dm&RRVT~k&RVTC#D~jC&VSP'+C%C~jC$U#O$OTDO$D~iC#/C%QTC#CS$D~iC#/C%PTC$CS$D~iC#/CRTCUCS$D~iC#/C%OSCO%CS$D~i$OC%S$S%CS$D~i%OC$S$S$CS%D~j$OC#S&S#CS$D~k%OD&DS%D~l%TFT%D~n&V&D~p&&$D~r&&C~~~g");
-const HG = outline([...Array(HH)].map((_, y) => HF.slice(y * HW, y * HW + HW))), HERO = toCanvas(HG, PAL), HSIL = toCanvas(HG.map(r => r.map(k => k > '.' ? 'w' : k)), PAL);
+const rows = (f, w) => [...Array(f.length / w)].map((_, y) => f.slice(y * w, y * w + w));
+/* La chamita esperando para rumbear: brazos arriba, pelo largo, zarcillos, franela roja y bluejean (18x25) */
+const CHAMA = toCanvas(outline(rows(unrle("qHjH`Hb&bH`Ga$D&aG`G`#C&&`GaG_&&$_GbG_$JH$_GbG_$G#H#G$_GbG_$JH$_GcG$H@H$GdG#'#J#'#GdG&H&GeG>=?Gg>=?i>;?j>;?j>;?j*'+jZW[jZW[jX`W[jX`W[jX`W[i1`1u"), 18)), PAL);
+const HG = outline(rows(HF, HW)), HERO = toCanvas(HG, PAL), HSIL = toCanvas(HG.map(r => r.map(k => k > '.' ? 'w' : k)), PAL);
 
 /* ---------- audio con osciladores ---------- */
 let AC = null, SCN = null, ENG = null;
@@ -275,7 +278,7 @@ const mtof = n => 440 * Math.pow(2, (n - 69) / 12);
 const GY = [116,130,145,160,175,196], MX = 84, TRIP = 7200;
 const nearestPos = y => { let b = 0; for (let i = 1; i < 6; i++) if (AB(GY[i] - y) < AB(GY[b] - y)) b = i; return b; };
 const INSULTS = ['#@%!','&$#%!','ANIMAL!','BRUTO!','TE VAS A MATAR!','MOTORIZAO TENIAS QUE SER!','LOCO!','#@%&!'];
-const TRAMOS = ['PETARE','LOS RUICES','PARQUE DEL ESTE','LA CARLOTA','EL PULPO','LA OFICINA'];
+const TRAMOS = ['PETARE','LOS RUICES','PARQUE DEL ESTE','LA CARLOTA','EL PULPO','CASA DE LA CHAMITA'];
 const ENDS = {
   espaldas: ['TE FUISTE DE ESPALDAS','SUELTA EL CABALLITO ANTES DEL ROJO'],
   choque: ['TE COMISTE UN CARRO','USA LOS CANALITOS'],
@@ -286,7 +289,7 @@ const ENDS = {
   guaire: ['CAISTE EN EL GUAIRE','NO TE PEGUES AL BORDE'],
   vendedor: ['TUMBASTE AL DE LAS COTUFAS','TOCA CORNETA Y ESPERA'],
   preso: ['PRESO!','TE AGARRO EL FISCAL'],
-  tarde: ['TE BOTARON','LLEGASTE TARDE AL TRABAJO'],
+  tarde: ['WILKERSON SE LA LLEVO','LLEGASTE TARDE POR LA CHAMITA'],
 };
 const occ = v => v.wide ? [v.lane * 2 - 1, v.lane * 2, v.lane * 2 + 1] : [...new Set([v.lane * 2, nearestPos(v.gy)])];
 function fl(S, x, y, s, col) { S.floats.push({ x, y, s, col, t: 0 }); }
@@ -306,16 +309,16 @@ function newRun(ri, ai, day, score) {
   S.nx = { evt: 450, pick: 350, grua: 1100 + rnd() * 500, riv: 800 + rnd() * 500, cola: 1900 + rnd() * 600 };
   TRAMOS.forEach((n, i) => S.signs.push({ x: i === 0 ? 150 : i * TRIP / 5, text: n, done: i === 0, last: i === 5 }));
   S.av = []; for (let i = 0; i < 640; i++) S.av.push(MXX(10, 24 + RO(10 * SN(i / 41) + 6 * SN(i / 17 + 1) + 3 * SN(i / 7 + 2))));
-  S.bld = []; for (let x = 0; x < 800;) { const w = 12 + FL(rnd() * 20), h = 14 + FL(rnd() * 30); S.bld.push([x, w, h, pick(['#d9cbb4','#c9b8a0','#e8e0d0','#b8a890','#d0d4dc'])]); x += w + 2; }
-  S.ran = []; for (let i = 0; i < 80; i++) S.ran.push([FL(rnd() * 640), FL(rnd() * 10), pick(['#e03a33','#ffd23a','#3fd0e0','#f28aa0','#f2f2f2','#c98a3a'])]);
+  S.bld = []; for (let x = 0; x < 800;) { const w = 12 + FL(rnd() * 20), h = 14 + FL(rnd() * 30); S.bld.push([x, w, h, pick(['#241e3a','#2c2448','#1f2a44','#302a4a','#262036'])]); x += w + 2; }
+  S.ran = []; for (let i = 0; i < 80; i++) S.ran.push([FL(rnd() * 640), FL(rnd() * 10), pick(['#ffd23a','#f2c56b','#ff9a2a','#f2f2f2'])]);
   for (let i = 0; i < 5; i++) spawnVeh(S, 90 + i * 62);
-  if (!ai) banner(S, 'DIA ' + day, '#e6ff00', .8);
+  if (!ai) banner(S, 'NOCHE ' + day, '#e6ff00', .8);
   return S;
 }
 function spawnVeh(S, x, forceLane, forceKind) {
   const r = rnd() * (S.cola && !S.colaDone ? .76 : 1), kind = forceKind || (r < .48 ? 'car' : r < .62 ? 'suv' : r < .76 ? 'viejo' : r < .88 ? 'bus' : 'gandola');
   const lane = forceLane != null ? forceLane : FL(rnd() * 3);
-  const col = kind === 'car' ? pick(VCOL) : kind === 'viejo' ? '#d8c28a' : kind === 'suv' ? '#26282e' : kind === 'bus' ? pick(['#f2f2f2','#3fd0e0','#f28aa0','#ffd23a']) : kind === 'gandola' ? '#c62828' : '#f2c200';
+  const col = kind === 'car' ? pick(VCOL) : kind === 'viejo' ? '#d8c28a' : kind === 'suv' ? '#474b58' : kind === 'bus' ? pick(['#f2f2f2','#3fd0e0','#f28aa0','#ffd23a']) : kind === 'gandola' ? '#c62828' : '#f2c200';
   const sp = vehSpr(kind, col);
   const v = { kind, img: sp.img, L: sp.L, gb: sp.gb, lane, gy: GY[lane * 2], x, wide: kind === 'bus' || kind === 'gandola' || kind === 'grua', bubble: null, bubbleT: 0,
     v: kind === 'car' ? 45 + rnd() * 20 : kind === 'suv' ? 50 + rnd() * 20 : kind === 'viejo' ? 30 + rnd() * 10 : kind === 'bus' ? 38 + rnd() * 10 : kind === 'grua' ? 42 : 32 + rnd() * 8 };
@@ -345,7 +348,7 @@ function spawnCola(S) {
   for (let lane = 0; lane < 3; lane++) {
     let x = X0 + rnd() * 8; const gaps = V.filter(q => q.lane === lane).map(q => q.x);
     while (x < X0 + LEN) {
-      const k = rnd() < .6 ? 'car' : rnd() < .5 ? 'suv' : 'viejo', sp = vehSpr(k, k === 'car' ? pick(VCOL) : k === 'viejo' ? '#d8c28a' : '#26282e');
+      const k = rnd() < .6 ? 'car' : rnd() < .5 ? 'suv' : 'viejo', sp = vehSpr(k, k === 'car' ? pick(VCOL) : k === 'viejo' ? '#d8c28a' : '#474b58');
       const gp = gaps.find(gx => x < gx + 16 && x + sp.L > gx - 16);
       if (gp != null) { x = gp + 16; continue; }
       S.veh.push({ kind: k, img: sp.img, L: sp.L, gb: sp.gb, lane, gy: GY[lane * 2], x, v: 0, base: 0, wide: false, bubble: null, bubbleT: 0, cola: true });
@@ -583,7 +586,7 @@ function simStep(S, dt) {
   }
   for (const s of S.signs) if (!s.done && s.x < m.x && !m.crashed) {
     s.done = true;
-    if (s.last) { S.arrived = t; m.inv = 99; const b = Math.ceil(S.time) * 50; S.score += b; banner(S, 'LLEGASTE A TIEMPO!', '#e6ff00', 3); fl(S, MX, m.y - 44, 'BONO DE TIEMPO +' + b, '#3fd0e0'); sfx(S, 'pick'); }
+    if (s.last) { S.arrived = t; m.inv = 99; const b = Math.ceil(S.time) * 50; S.score += b; banner(S, 'LA RECOGISTE! A RUMBEAR!', '#e6ff00', 3); fl(S, MX, m.y - 44, 'BONO DE TIEMPO +' + b, '#3fd0e0'); sfx(S, 'pick'); }
     else { S.time += 12; fl(S, MX, m.y - 48, s.text + ' +12 SEG', '#3fd0e0'); sfx(S, 'blip'); }
   }
   S.fish -= dt; if (S.fish < -1.2) S.fish = 5 + rnd() * 5;
@@ -615,8 +618,8 @@ function drawBoards(S) {
   for (const it of [[40,'efe'],[200,'peje'],[360,'nomi'],[640,'hielo']]) {
     const bx = RO(((it[0] - c * .5) % 900 + 900) % 900 - 110); if (bx < -110 || bx > 330) continue;
     if (it[1] === 'peje') {
-      F('#d4c6a6');Q(bx+10,34+o,48,38);F('#bfb190');Q(bx+10,34+o,48,2);
-      F('#8aa0b8');for(let yy=40+o;yy<68+o;yy+=9)for(let xx=bx+14;xx<bx+56;xx+=10)if(!(yy===40+o&&xx===bx+34))Q(xx,yy,6,6);
+      F('#3e3656');Q(bx+10,34+o,48,38);F('#4e4668');Q(bx+10,34+o,48,2);
+      F('#ffd23a');for(let yy=40+o;yy<68+o;yy+=9)for(let xx=bx+14;xx<bx+56;xx+=10)if(!(yy===40+o&&xx===bx+34))Q(xx,yy,6,6);
       F('#3a2a24');Q(bx+34,40+o,6,6);F('#8f5a36');Q(bx+35,41+o,4,4);F('#1a0f08');Q(bx+35,40+o,4,2);F('#f28aa0');Q(bx+33,45+o,8,2);
       if (bx > -40 && bx < 260) { bubble(clamp(bx + 37, 70, 250), 18 + o, 'MAMA, SE METIO OTRO PEJELAGARTO!'); F('#fff');Q(bx+36,29+o,2,9);F('#151515');Q(bx+35,29+o,1,9);Q(bx+38,29+o,1,9); }
       continue;
@@ -632,26 +635,27 @@ function drawBoards(S) {
 }
 function drawScenery(S) {
   const c = S.cam, m = S.m;
-  F('#8fcaff');Q(0,12,W,30);F('#b4dcff');Q(0,42,W,24);F('#d2ecff');Q(0,66,W,26);
-  F('#f4f9ff');for(let i=0;i<6;i++){const x=RO(((i*83-c*.04)%400+400)%400-40);Q(x,18+(i%3)*6,18,3);Q(x+4,16+(i%3)*6,10,2);}
+  /* de noche: cielo con estrellas y luna llena */
+  bgBlue(12, 80, 24);
+  F('#f4efd6'); for (let j = -6; j <= 6; j++) { const w = RO(Math.sqrt(42 - j * j)); Q(282 - w, 30 + j, 2 * w, 1); } F('#d8d0b0'); Q(278, 27, 3, 2); Q(284, 32, 3, 2);
   const pk = (m.x - (3 * TRIP / 5 - 800)) / 1000;
-  if (pk > 0 && pk < 1) { const p0 = RO(340 - pk * 400), py = RO(20 + pk * 14); F('#f2f2f2');Q(p0,py,24,4);Q(p0+9,py-3,6,10);Q(p0+19,py-4,3,4);F('#2f6fe0');Q(p0+2,py+1,17,1); }
-  for (let x = 0; x < W; x++) { const i = ((x + FL(c * .08)) % 640 + 640) % 640, h = S.av[i]; F('#4f8a5a');Q(x,84-h,1,h);F('#3f7a4a');Q(x,84-FL(h*.5),1,FL(h*.5)); }
-  for (const q of S.ran) { const x = RO(((q[0] - c * .08) % 640 + 640) % 640); if (x < W) { F(q[2]); Q(x, 74 + q[1] % 8, 3, 2); } }
+  if (pk > 0 && pk < 1) { const p0 = RO(340 - pk * 400), py = RO(20 + pk * 14); F('#8a90a8');Q(p0,py,24,4);Q(p0+9,py-3,6,10);Q(p0+19,py-4,3,4);F(FL(S.t*3)%2?'#e03a33':'#fff');Q(p0+20,py-5,2,2); }
+  for (let x = 0; x < W; x++) { const i = ((x + FL(c * .08)) % 640 + 640) % 640, h = S.av[i]; F('#10263a');Q(x,84-h,1,h);F('#0b1c2c');Q(x,84-FL(h*.5),1,FL(h*.5)); }
+  for (const q of S.ran) { const x = RO(((q[0] - c * .08) % 640 + 640) % 640); if (x < W) { F(q[2]); Q(x, 74 + q[1] % 8, 2, 1); } }
   const off = c * .3;
-  for (const b of S.bld) { const x = RO(((b[0] - off) % 800 + 800) % 800); if (x > W) continue; F(b[3]); Q(x, 92 - b[2], b[1], b[2]); F('#8aa0b8'); for (let yy = 95 - b[2]; yy < 89; yy += 4) for (let xx = 2; xx < b[1] - 2; xx += 4) Q(x + xx, yy, 2, 2); }
+  for (const b of S.bld) { const x = RO(((b[0] - off) % 800 + 800) % 800); if (x > W) continue; F(b[3]); Q(x, 92 - b[2], b[1], b[2]); for (let yy = 95 - b[2]; yy < 89; yy += 4) for (let xx = 2; xx < b[1] - 2; xx += 4) { F((xx * 3 + yy * 5 + b[0]) % 7 < 3 ? yy % 8 ? '#ffd23a' : '#f2c56b' : '#15122a'); Q(x + xx, yy, 2, 2); } }
   drawBoards(S);
-  F('#b9b5aa');Q(0,92,W,8);F('#d6d2c6');Q(0,92,W,1);F('#8f8b80');for(let x=-((c%32+32)%32);x<W;x+=32)Q(RO(x),93,1,7);
-  F('#3b3f46');Q(0,100,W,90);F('#4a4d52');Q(0,190,W,10);
-  F('#454951');for(let i=0;i<44;i++){const x=RO(((i*53-c)%330+330)%330-5);Q(x,102+(i*37)%86,2,1);}
-  F('#5a5d62');for(let i=0;i<24;i++){const x=RO(((i*41-c)%330+330)%330-5);Q(x,191+(i*5)%8,1,1);}
+  F('#4a4858');Q(0,92,W,8);F('#6a6878');Q(0,92,W,1);F('#383644');for(let x=-((c%32+32)%32);x<W;x+=32)Q(RO(x),93,1,7);
+  F('#262a34');Q(0,100,W,90);F('#33363e');Q(0,190,W,10);
+  F('#2f333d');for(let i=0;i<44;i++){const x=RO(((i*53-c)%330+330)%330-5);Q(x,102+(i*37)%86,2,1);}
+  F('#3f424a');for(let i=0;i<24;i++){const x=RO(((i*41-c)%330+330)%330-5);Q(x,191+(i*5)%8,1,1);}
   F('#ffd23a');Q(0,101,W,1);F('#e8e8e8');Q(0,189,W,1);
   const d = ((c % 24) + 24) % 24; for (let x = -d; x < W; x += 24) { Q(RO(x), 130, 12, 1); Q(RO(x), 160, 12, 1); }
-  F('#7a7466');Q(0,200,W,2);
-  F('#6e6446');Q(0,202,W,12);F('#645a3c');Q(0,214,W,12);F('#5a5034');Q(0,226,W,14);
-  F('#8a7e5a');for(let i=0;i<30;i++){const x=RO(((i*37-c*.9+S.t*6)%340+340)%340-10);Q(x,204+(i%6)*6,5,1);}
+  F('#34302c');Q(0,200,W,2);
+  F('#2a261e');Q(0,202,W,12);F('#231f18');Q(0,214,W,12);F('#1c1914');Q(0,226,W,14);
+  F('#3c3628');for(let i=0;i<30;i++){const x=RO(((i*37-c*.9+S.t*6)%340+340)%340-10);Q(x,204+(i%6)*6,5,1);}
   for (let i = 0; i < 8; i++) { const x = RO(((i * 113 - c * .9 + S.t * 4) % 360 + 360) % 360 - 20), y = 207 + (i * 7) % 26, k = i % 4;
-    if (k === 0) { F('#f2f2f2');Q(x,y,4,2); } else if (k === 1) { F('#3fbf4f');Q(x,y,3,3); } else if (k === 2) { F('#151515');Q(x,y,7,3);F('#6e6446');Q(x+2,y+1,3,1); } else { F('#8a5530');Q(x,y,8,1);Q(x+5,y-1,1,1); } }
+    if (k === 0) { F('#f2f2f2');Q(x,y,4,2); } else if (k === 1) { F('#3fbf4f');Q(x,y,3,3); } else if (k === 2) { F('#151515');Q(x,y,7,3);F('#2a261e');Q(x+2,y+1,3,1); } else { F('#8a5530');Q(x,y,8,1);Q(x+5,y-1,1,1); } }
   if (S.fish < 0) { const k = -S.fish / 1.2, fx = 250 - RO(k * 60), fy = RO(214 - SN(k * Math.PI) * 16); F('#2f7a3a');Q(fx,fy,12,3);Q(fx-4,fy+1,4,1);Q(fx+12,fy-1,2,2);Q(fx+12,fy+2,2,2);F('#e6ff00');Q(fx+2,fy,1,1); }
   if (S.edgeT > 0 && !m.crashed && FL(S.t * 8) % 2 === 0) { F('rgba(255,90,58,.4)'); Q(0, 200, W, 2); }
 }
@@ -665,7 +669,7 @@ function drawBless(S) {
   X.globalAlpha = a; txt('DIOS TE BENDIGA, HIJO', x - 17, y + 12, '#fff3b0', 1, 'r'); X.globalAlpha = 1;
 }
 function drawRun(S) {
-  const m = S.m, c = S.cam;
+  const m = S.m, c = S.cam, chx = RO(S.signs[5].x + 200 - c);
   X.save();
   if (S.shake > 0) X.translate(RO((Math.random() - .5) * 3), RO((Math.random() - .5) * 2));
   if (m.turbo > 0 && !m.crashed) X.translate(RO(SN(S.t * 3.5) * 2), 0);
@@ -673,8 +677,8 @@ function drawRun(S) {
   for (const s of S.signs) { const sx = RO(s.x - c); if (sx < -100 || sx > 340) continue; F('#7d848e');Q(sx,54,2,46);Q(sx+86,54,2,46);F('#f2f2f2');Q(sx,40,88,15);F(s.last?'#1b4fa0':'#1f6f3a');Q(sx+1,41,86,13);txt(s.text,sx+44,45,'#f2f2f2',1,'c',null); }
   for (const h of S.haz) {
     const hx = RO(h.x - c), gy = GY[h.pos]; if (hx < -20 || hx > 330) continue;
-    if (h.kind === 'hueco') { F('#2a2d33');Q(hx,gy-3,12,6);F('#0c0d10');Q(hx+1,gy-2,10,4);F('#6b3f22');Q(hx+6,gy-16,1,14);Q(hx+7,gy-12,2,1);F('#3fbf4f');Q(hx+4,gy-19,5,3);Q(hx+8,gy-14,3,2); }
-    else { F('#2a2d33');Q(hx,gy-1,10,3);Q(hx+2,gy-2,5,1); }
+    if (h.kind === 'hueco') { F('#4a4e58');Q(hx,gy-3,12,6);F('#000');Q(hx+1,gy-2,10,4);F('#6b3f22');Q(hx+6,gy-16,1,14);Q(hx+7,gy-12,2,1);F('#3fbf4f');Q(hx+4,gy-19,5,3);Q(hx+8,gy-14,3,2); }
+    else { F('#15171d');Q(hx,gy-1,10,3);Q(hx+2,gy-2,5,1); }
   }
   const ents = [];
   for (const v of S.veh) ents.push({ y: v.gy, f: () => { const vx = RO(v.x - c), top = RO(v.gy - v.gb); if (vx > 340 || vx + v.L < -20) return; X.drawImage(v.img, vx, top); if (v.kind === 'gandola') txt('PLATANUS HACK', vx + 36, top + 10, '#151515', 1, 'c', null); if (v.kind === 'grua' && FL(S.t * 6) % 2) { F('#ff9a2a'); Q(vx + 62, top + 4, 3, 2); } } });
@@ -682,6 +686,8 @@ function drawRun(S) {
   for (const q of S.vnd) ents.push({ y: q.y, f: () => { const vx = q.x - c; if (vx < -20 || vx > 340) return; F('rgba(0,0,0,.3)'); Q(RO(vx) - 5, RO(q.y) - 1, 10, 2); dS(q.spr, vx, q.y - (FL(q.ph * 3) % 2)); } });
   for (const q of S.riv) ents.push({ y: q.y, f: () => { const qx = q.x - c; if (qx < -30 || qx > 340) return; F('rgba(0,0,0,.35)'); Q(RO(qx) - 10, RO(q.y) - 1, 22, 2); drawMotoAt(q.spr, qx, q.y, 0, 'r'); } });
   if (S.cop) ents.push({ y: S.cop.y, f: () => { const cx = S.cop.x - c; F('rgba(0,0,0,.35)'); Q(RO(cx) - 10, RO(S.cop.y) - 1, 22, 2); drawMotoAt(COP, cx, S.cop.y, 0, 'r'); F(FL(S.t * 8) % 2 ? '#e03a33' : '#2f6fe0'); Q(RO(cx) - 8, RO(S.cop.y) - 19, 3, 2); } });
+  /* la chamita espera en la acera de su casa: sale solo si llegaste a tiempo y brinca celebrando */
+  if (S.arrived) ents.push({ y: 100, f: () => { const k = S.t - S.arrived, y = 100 - RO(AB(SN(k * 8)) * 6); X.drawImage(CHAMA, chx - 9, y - 25); for (let i = 0; i < 2; i++) heart(chx - 15 + i * 26, y - 16 - RO((k * 16 + i * 7) % 14), '#ff3d8b'); } });
   ents.push({ y: m.y, f: () => {
     const sx = m.x - c, yy = m.y - m.h + (m.turbo > 0 && !m.air && !m.crashed ? RO(SN(S.t * 9) * 2) : 0);
     F('rgba(0,0,0,.35)'); Q(RO(sx) - 10, RO(MN(m.y, 198)) - 1, 22, 2);
@@ -700,6 +706,7 @@ function drawRun(S) {
   for (const q of S.riv) if (q.honkT > 0 && q.say) bubble(q.x - c, q.y - 32, q.say);
   for (const q of S.vnd) if (q.sayT > 0) { const vx = q.x - c; if (vx > -20 && vx < 340) bubble(vx, q.y - 32, q.say); }
   if (S.cop && S.cop.bubbleT > 0) bubble(S.cop.x - c, S.cop.y - 34, 'PARATE AHI!');
+  if (S.arrived) bubble(chx, 50, 'VAMOS A RUMBEAR!');
   if (S.honk > 0 && !m.crashed) bubble(m.x - c + 4, m.y - m.h - 46, 'PI PI!');
   for (const f of S.floats) { X.globalAlpha = f.t > 1 ? clamp(1 - (f.t - 1) / .3, 0, 1) : 1; txt(f.s, f.x, f.y - f.t * 14, f.col, 1, 'c'); X.globalAlpha = 1; }
   for (const b of S.banners) { const w = tw(b.s, 2) + 16, x0 = RO(160 - w / 2); F('rgba(0,0,0,.8)'); Q(x0, 104, w, 20); F(b.col); Q(x0, 104, w, 1); Q(x0, 123, w, 1); if (b.t > .45 || FL(b.t * 10) % 2 === 0) txt(b.s, 160, 109, b.col, 2, 'c'); }
@@ -716,7 +723,7 @@ function drawRun(S) {
   if (m.casco) drawPickup('casco', 276, 12);
   if (m.inv > 0 && m.inv < 90) { drawPickup('estampita', 290, 12); F('#e6ff00'); Q(297, 6, RO(20 * m.inv / 5.5), 2); }
   else if (m.turbo > 0) { drawPickup('anis', 290, 12); F('#f2c56b'); Q(297, 6, RO(20 * m.turbo / 4), 2); }
-  else txt('DIA ' + S.day, 316, 4, '#8e8e88', 1, 'r', null);
+  else txt('NOCHE ' + S.day, 316, 4, '#8e8e88', 1, 'r', null);
 }
 
 /* ---------- pantallas ---------- */
@@ -741,12 +748,13 @@ function saveRank() { try { Promise.resolve(getStorage().set(SKEY, RANK)).catch(
 
 /* Titulo fijo: nombre en negro sobre franja amarilla, el heroe a la izquierda y el ranking con los controles a la derecha */
 /* Fondo del titulo y de la seleccion: degradado azul de #000628 (arriba) a #011469 (abajo), fila por fila */
-function bgBlue() {
-  for (let y = 0; y < H; y++) { const k = y / (H - 1); F('rgb(' + RO(k) + ',' + RO(6 + 14 * k) + ',' + RO(40 + 65 * k) + ')'); Q(0, y, W, 1); }
+/* Cielo de noche: degradado azul entre y0 y y0+h con n estrellas; lo usan el titulo, la seleccion y la partida */
+function bgBlue(y0 = 0, h = H, n = 64) {
+  for (let y = 0; y < h; y++) { const k = y / (h - 1); F('rgb(' + RO(k) + ',' + RO(6 + 14 * k) + ',' + RO(40 + 65 * k) + ')'); Q(0, y0 + y, W, 1); }
   /* estrellas de noche: posiciones pseudoaleatorias fijas (hash con seno), tres brillos y unas pocas en cruz */
   const hs = n => { const q = SN(n) * 43758.5453; return q - FL(q); };
-  for (let i = 0; i < 64; i++) {
-    const x = 1 + FL(hs(i * 12.99 + 1) * (W - 2)), y = 1 + FL(hs(i * 78.23 + 2) * (H - 2)), b = FL(hs(i * 3.7 + 3) * 9);
+  for (let i = 0; i < n; i++) {
+    const x = 1 + FL(hs(i * 12.99 + 1) * (W - 2)), y = y0 + 1 + FL(hs(i * 78.23 + 2) * (h - 2)), b = FL(hs(i * 3.7 + 3) * 9);
     F(b > 7 ? '#ffffff' : b > 3 ? '#aab8ee' : '#5a6aa8'); Q(x, y, 1, 1); if (b > 7) { Q(x - 1, y, 3, 1); Q(x, y - 1, 1, 3); }
   }
 }
@@ -781,14 +789,14 @@ function drawSelect() {
   ['VELOCIDAD', 'MANEJO', 'EQUILIBRIO'].forEach((l, i) => { txt(l, 96, 126 + i * 10, '#8e8e88', 1, 'l', null); for (let k = 0; k < 5; k++) { F(k < r.st[i] ? '#e6ff00' : '#333'); Q(150 + k * 14, 126 + i * 10, 12, 6); } });
   txt(r.sp, 160, 164, '#f28aa0', 1, 'c', null);
   txt('< >  ELIGE', 110, 190, '#f2f2f2', 1, 'c', null); txt('BOTON 1: ARRANCA', 214, 190, '#e6ff00', 1, 'c', null);
-  txt('LLEGA A LA OFICINA ANTES DE QUE SE ACABE EL TIEMPO', 160, 214, '#8e8e88', 1, 'c', null);
+  txt('RECOGE A LA CHAMITA ANTES DE QUE SE ACABE EL TIEMPO', 160, 214, '#8e8e88', 1, 'c', null);
 }
 function drawOver(S) {
   if (MT < .01) return;
   F('rgba(12,7,20,.88)'); Q(0, 12, W, H - 12);
   txt(S.end[0], 160, 34, '#ff5a3a', 2, 'c'); txt(S.end[1], 160, 54, '#f28aa0', 1, 'c', null);
   const row = (l, v, y, col) => { txt(l, 90, y, '#8e8e88', 1, 'l', null); txt(v, 230, y, col, 1, 'r', null); };
-  row('PUNTOS', String(S.score).padStart(6, '0'), 80, '#e6ff00'); row('RECORRIDO', RO(clamp(S.m.x / TRIP, 0, 1) * 100) + '%', 92, '#f2f2f2'); row('DIA', String(S.day), 104, '#f2f2f2'); row('RECORD', String(RANK[0].s).padStart(6, '0'), 116, '#f2f2f2');
+  row('PUNTOS', String(S.score).padStart(6, '0'), 80, '#e6ff00'); row('RECORRIDO', RO(clamp(S.m.x / TRIP, 0, 1) * 100) + '%', 92, '#f2f2f2'); row('NOCHE', String(S.day), 104, '#f2f2f2'); row('RECORD', String(RANK[0].s).padStart(6, '0'), 116, '#f2f2f2');
   X.drawImage(S.m.R.img, 134, 132, 52, 42);
   if (MT > 1 && FL(MT * 2.5) % 2 === 0) txt(pressTxt(), 160, 196, '#e6ff00', 2, 'c');
 }

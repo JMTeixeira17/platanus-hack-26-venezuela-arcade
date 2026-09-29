@@ -2,9 +2,11 @@
 const fs = require('fs');
 let src = fs.readFileSync(require('path').join(__dirname, '..', 'game.js'), 'utf8');
 src = src.slice(0, src.indexOf('new Phaser.Game('));
+/* Record every txt() call so the story tests can read what a screen writes. */
+src = 'const TXT = [];\n' + src.replace("function txt(s, x, y, col, sc = 1, al = 'l', sh = '#000') {", "function txt(s, x, y, col, sc = 1, al = 'l', sh = '#000') { TXT.push([String(s), sc, x, y]);");
 global.window = { addEventListener() {} };
 global.document = { createElement: () => ({ getContext: () => ({ set fillStyle(v) {}, fillRect() {} }) }) };
-const G = new Function(src + '\nreturn { newRun, simStep, drawRun, GY, STEP, vehSpr, held, pressed, tw, W, MX, FONT, setAC: a => { AC = a; }, setX: c => { X = c; }, tick, render, getMode: () => MODE, setMode: md => { MODE = md; MT = 0; } };')();
+const G = new Function(src + '\nreturn { newRun, simStep, drawRun, GY, STEP, vehSpr, held, pressed, tw, W, MX, FONT, setAC: a => { AC = a; }, setX: c => { X = c; }, tick, render, getMode: () => MODE, setMode: md => { MODE = md; MT = 0; }, TXT, H, TRIP, drawOver, setMT: t => { MT = t; }, setRun: r => { RUN = r; }, setSel: i => { SEL = i; }, get CHAMA() { return CHAMA; }, TRAMOS, ENDS, crash };')();
 
 function release() { for (const k in G.held) G.held[k] = false; for (const k in G.pressed) G.pressed[k] = false; }
 function scene(pos, v = 0, ai = false) {
@@ -67,6 +69,16 @@ function copScene(copPos, playerPos, catchT) {
   c.tpos = copPos; c.y = G.GY[copPos]; c.x = S.m.x - 20; c.v = 0; c.t = 1; c.catchT = catchT;
   return { S, c };
 }
+
+/* ---------- night story helpers ---------- */
+const rgbOf = c => { const m = /^rgb\((\d+),(\d+),(\d+)\)$/.exec(String(c).replace(/\s/g, '')); if (m) return m.slice(1).map(Number); let h = /^#([0-9a-f]{3})$/i.exec(c); if (h) c = '#' + [...h[1]].map(d => d + d).join(''); h = /^#([0-9a-f]{6})$/i.exec(c); return h ? [0, 2, 4].map(k => parseInt(h[1].substr(k, 2), 16)) : null; };
+/* Fake canvas that records drawImage calls with their destination box. */
+function fakeImg(log) { let fs = ''; return { set fillStyle(v) { fs = v; }, get fillStyle() { return fs; }, set globalAlpha(v) {}, fillRect(x, y, w, h) { log.push({ k: 'r', x, y, w, h, c: fs }); }, drawImage(img, x, y, w, h) { log.push({ k: 'i', img, x, y, w: w == null ? img.width : w, h: h == null ? img.height : h }); }, save() {}, restore() {}, translate() {}, rotate() {}, setTransform() {} }; }
+/* paint() rows as [x, y, w, h, colour] (the colour may be rgb(a,b,c)). */
+const rec = S => paint(S).map(q => { const a = q.split(','); return [...a.slice(0, 4), a.slice(4).join(',')]; });
+function draws(S) { const log = []; G.setX(fakeImg(log)); G.drawRun(S); return log.filter(e => e.k === 'i'); }
+/* Ride into the last sign (la chamita's place) at speed v and return the run just after arriving. */
+function arrive(v = 120) { const S = scene(2, v); S.time = 30; S.m.x = S.signs[5].x - 3; for (let i = 0; i < 20 && !S.arrived; i++) step(S); return S; }
 
 const cases = [
   ['fiscal spawns with +21 over the player speed', () => { const S = scene(2, 112); S.siren = 1; step(S); return !!S.cop && Math.abs(S.cop.v - (S.m.v + 21)) < 1e-6; }],
@@ -144,6 +156,60 @@ const cases = [
     if (G.getMode() !== 'title') return false;
     try { G.render(); return true; } catch (e) { return false; }
   }],
+  /* ---------- night story: pick up la chamita before Wilkerson does ---------- */
+  ['match sky is night: none of the old day sky colours, a dark blue band with stars', () => {
+    const r = rec(scene(2)), cols = r.map(q => q[4]);
+    const sky = r.filter(q => +q[0] <= 0 && +q[2] >= G.W && +q[1] >= 12 && +q[1] < 60 && +q[3] <= 2).map(q => rgbOf(q[4])).filter(Boolean);
+    const stars = r.filter(q => +q[1] >= 12 && +q[1] < 60 && +q[2] <= 3 && +q[3] <= 3 && ['#ffffff', '#aab8ee', '#5a6aa8'].includes(q[4]));
+    return !['#8fcaff', '#b4dcff', '#d2ecff', '#f4f9ff'].some(c => cols.includes(c)) && sky.length >= 30 && sky.every(([R, Gc, B]) => B > R + 30 && B > Gc + 30 && B <= 120) && stars.length >= 5;
+  }],
+  ['night city: buildings show warm lit windows and some dark ones, the same every frame', () => {
+    const S = scene(2), a = paint(S), win = rec(S).filter(q => q[2] === '2' && q[3] === '2' && +q[1] >= 40 && +q[1] < 92);
+    const lit = win.filter(q => ['#ffd23a', '#f2c56b', '#ff9a2a'].includes(q[4])), off = win.filter(q => !['#ffd23a', '#f2c56b', '#ff9a2a'].includes(q[4]));
+    return lit.length >= 20 && off.length >= 10 && paint(S).join('|') === a.join('|');
+  }],
+  ['the road is darker than by day but lanes, edges and potholes stay readable', () => {
+    const S = scene(2); S.cam = S.m.x - G.MX; S.haz = [{ kind: 'hueco', pos: 2, x: S.m.x + 60 }]; const r = rec(S);
+    const road = r.find(q => +q[0] === 0 && +q[1] === 100 && +q[2] >= G.W && +q[3] >= 80), lane = r.find(q => +q[1] === 130 && +q[2] === 12), hole = r.find(q => +q[2] === 10 && +q[3] === 4);
+    const L = c => { const v = rgbOf(c); return .3 * v[0] + .59 * v[1] + .11 * v[2]; };
+    return road && lane && hole && L(road[4]) < L('#3b3f46') && L(lane[4]) - L(road[4]) > 120 && L(road[4]) - L(hole[4]) > 25;
+  }],
+  ['the last TRAMO is la chamita\'s place and fits on its sign', () => /CHAMITA/.test(G.TRAMOS[5]) && G.tw(G.TRAMOS[5]) <= 84],
+  ['running out of time: WILKERSON SE LA LLEVO, and both lines fit', () => {
+    const S = scene(2, 50); S.time = .01; step(S, 2);
+    return S.m.why === 'tarde' && S.end[0] === 'WILKERSON SE LA LLEVO' && /CHAMITA/.test(S.end[1]) && G.tw(S.end[0], 2) <= 316 && G.tw(S.end[1]) <= 316;
+  }],
+  ['arriving: LA RECOGISTE! A RUMBEAR! banner that fits the screen', () => {
+    const S = arrive(); const b = S.banners[0];
+    return S.arrived > 0 && b && b.s === 'LA RECOGISTE! A RUMBEAR!' && G.tw(b.s, 2) + 16 <= G.W;
+  }],
+  ['levels are NOCHE N: start banner, HUD and game-over row, never DIA', () => {
+    const S = G.newRun(0, false, 2, 0), start = S.banners[0] && S.banners[0].s;
+    G.TXT.length = 0; paint(S); const hud = G.TXT.map(q => q[0]);
+    S.end = G.ENDS.tarde; G.TXT.length = 0; G.setMT(1); G.drawOver(S); const over = G.TXT.map(q => q[0]);
+    return start === 'NOCHE 2' && hud.includes('NOCHE 2') && over.includes('NOCHE') && ![...hud, ...over].some(t => /^DIA\b/.test(t));
+  }],
+  ['rider select asks to pick up la chamita before time runs out, inside the screen', () => {
+    release(); G.setX(fakeImg([])); G.setMode('select'); G.TXT.length = 0; G.render();
+    const t = G.TXT.find(q => /CHAMITA/.test(q[0])); return !!t && G.tw(t[0], t[1]) <= G.W - 4 && !G.TXT.some(q => /OFICINA/.test(q[0]));
+  }],
+  ['la chamita is not drawn before arriving, nor after a crash or a time-out', () => {
+    const cham = S => draws(S).filter(e => e.img === G.CHAMA).length;
+    const a = scene(2, 50), b = scene(2, 50), c = scene(2, 50); G.crash(b, 'choque'); c.time = .01; step(c, 2); step(b, 30); step(c, 30);
+    const near = scene(2, 120); near.m.x = near.signs[5].x - 40; step(near, 5);
+    return cham(a) === 0 && cham(b) === 0 && cham(c) === 0 && !near.arrived && cham(near) === 0;
+  }],
+  ['after arriving la chamita celebrates: drawn, jumping over time, saying VAMOS A RUMBEAR!', () => {
+    const S = arrive(), ys = new Set(); let said = false;
+    for (let i = 0; i < 40; i++) { step(S, 2); G.TXT.length = 0; const d = draws(S).filter(e => e.img === G.CHAMA); if (d.length !== 1) return false; ys.add(d[0].y); said = said || G.TXT.some(q => q[0] === 'VAMOS A RUMBEAR!'); }
+    return ys.size >= 3 && said;
+  }],
+  ['la chamita and her hearts stay inside the screen for the whole arrival, even arriving on turbo', () => [120, 210].every(v => {
+    const S = arrive(v); let ok = true, n = 0;
+    for (let i = 0; i < 3.1 * 60 && ok; i++) { step(S); const d = draws(S); const ch = d.filter(e => e.img === G.CHAMA); n += ch.length; ok = ch.every(e => e.x >= 0 && e.x + e.w <= G.W && e.y >= 12 && e.y + e.h <= G.H); }
+    return ok && n > 150;
+  })],
+  ['no office / work wording is left in game.js', () => !/OFICINA|TRABAJO|TE BOTARON|JEFE|'DIA /i.test(fs.readFileSync(require('path').join(__dirname, '..', 'game.js'), 'utf8'))],
 ];
 let fail = 0;
 for (let [name, fn] of cases) { let ok; try { ok = fn(); } catch (e) { ok = false; name += '  [' + e.message + ']'; } if (!ok) fail++; console.log((ok ? 'PASS ' : 'FAIL ') + name); }

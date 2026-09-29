@@ -2,7 +2,7 @@
 
 Juego para el Arcade Challenge de Platanus Hack 26 Caracas. Un jugador, Phaser 3, todo dibujado y sonado con código.
 
-- `game.js`: 49.2 KB minificado (el límite es 50 KB). Pasa `npm run check-restrictions`.
+- `game.js`: 49.7 KB minificado (el límite es 50 KB). Pasa `npm run check-restrictions`.
 - `metadata.json`: nombre, descripción y `single_player`.
 - `cover.png`: 800x600, pixel art hecho con los sprites y la fuente del juego. Se regenera con `node tools/make-cover.mjs` (necesita Google Chrome instalado).
 
@@ -44,7 +44,8 @@ En el teléfono salen controles táctiles: joystick a la izquierda, botones 1 y 
 
 ## Qué hay en el juego
 
-- **Meta:** 5 motorizados con velocidad, manejo, equilibrio y un especial propio. Hay que ir de Petare a la oficina antes de que se acabe el tiempo; cada tramo suma segundos. Si llegas, empieza el día siguiente, con más tráfico y menos tiempo.
+- **Meta:** es de noche y hay que buscar a la chamita para irse a rumbear. 5 motorizados con velocidad, manejo, equilibrio y un especial propio. Hay que ir de Petare a la casa de la chamita antes de que se acabe el tiempo; cada tramo suma segundos. Si llegas a tiempo, ella te espera en la acera celebrando y empieza la noche siguiente, con más tráfico y menos tiempo. Si no, Wilkerson se la lleva.
+- **La Fajardo de noche:** cielo con estrellas y luna llena, el Ávila en sombra con las luces de los barrios, edificios con ventanas encendidas y vallas iluminadas.
 - **Puntos:** rasantes en combo (con insultos), caballito, piruetas desde las grúas, empanadas.
 - **Peligros:** alcantarillas con rama que solo pasas en caballito, camioneticas que frenan con "¡PARADA!", baches, motorizados que te empujan tocando corneta, el hombrillo que te tira al Guaire, colas con vendedores que no puedes chocar y el fiscal, que aparece cuando se llena la sirena. Se le escapa saltando desde una grúa, dejándole un carro en medio o aguantando 9 segundos hasta que se cansa.
 - **Power-ups:** estampita de José Gregorio (invencible, y se aparece a bendecirte con música de iglesia), Anís Cartujo (turbo, pero curdo), guayoyo (+5 segundos), casco (aguanta un choque) y empanada.

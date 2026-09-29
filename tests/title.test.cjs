@@ -161,7 +161,7 @@ const cases = [
     toIntro(); press('START1'); const early = G.getMode() === 'intro'; ticks(20); press('START1'); const a = G.getMode() === 'play';
     toIntro(); ticks(20); press('P1_1'); return early && a && G.getMode() === 'play';
   }],
-  ['arriving at the office goes to the next day without the intro', () => {
+  ['arriving at la chamita\'s place goes to the next night without the intro', () => {
     release(); G.setX(fake([])); G.setMode('play'); const r = G.newRun(1, false, 1, 500); r.arrived = r.t = 1; r.t = 5; G.setRun(r);
     let seen = false; for (let i = 0; i < 30 && G.getRun() === r; i++) { G.tick(G.STEP); seen = seen || G.getMode() === 'intro'; }
     const n = G.getRun(); return !seen && G.getMode() === 'play' && n !== r && n.day === 2 && n.score === 500;
