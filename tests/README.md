@@ -5,8 +5,9 @@ Standalone Node scripts (no dependencies). They load the real `game.js` with a f
 | Command | What it checks |
 |---|---|
 | `node tests/collision.test.cjs` | Player vs vehicle collision matches the sprites (14 cases) |
-| `node tests/touch.test.cjs` | Touch controls map to arcade codes, START button outside play, stuck touches recover; cabinet unaffected (22 cases) |
+| `node tests/touch.test.cjs` | Touch controls map to arcade codes, START button outside play (also on the intro), stuck touches recover; cabinet unaffected (23 cases) |
 | `node tests/gameplay.test.cjs` | Fiscal can be escaped (speed, give-up time, blocked lane step resets the catch), squeezing through a jam only when slow, estampita blessing (ghost below the HUD, soft amen, silent in the demo), anis text fits the screen; leaving the ranking screen does not freeze the game (23 cases) |
+| `node tests/title.test.cjs` | Static title (same drawing at any time, only the START prompt blinks; no demo drawn or simulated behind it): MOTO PIRUETAS on a yellow band, subtitle, hero at 2x, ranking (5 rows) and controls together, nothing on the START row, PLATANUS HACK 26 footer with a banana; hero sprite decodes to its declared size with palette keys only and a free border; game name; PLATANUS HACK 2026 intro with the Venezuelan flag (8-star arc) on black, auto-advance at ~2.5 s, START / button 1 skip after 0.3 s, not shown on the next day (32 cases) |
 | `node tests/ai-smoke.cjs [a.js b.js ...]` | Runs 200 AI demo games per file and prints distance and end causes (defaults to `game.js`) |
 | `node tests/measure-sprites.cjs` | Prints sprite pixel bounds vs hit bands |
 

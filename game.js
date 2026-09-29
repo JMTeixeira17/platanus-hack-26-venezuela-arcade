@@ -143,7 +143,7 @@ function bubble(x, y, s) {
 function heart(x, y, col) { F(col); Q(x, y, 2, 1); Q(x + 3, y, 2, 1); Q(x, y + 1, 5, 1); Q(x + 1, y + 2, 3, 1); Q(x + 2, y + 3, 1, 1); }
 
 /* ---------- sprites de texto ---------- */
-const PAL = {k:'#151515',e:'#151515',s:'#c68a5c',S:'#8f5a36',l:'#edc09a',h:'#2a1a12',w:'#f2f2f2',W:'#bdbdbd',x:'#7a7a7a',X:'#3a3a3a',y:'#e6ff00',r:'#e03a33',b:'#2f6fe0',n:'#1b2a5e',g:'#3fbf4f',o:'#f2c56b',O:'#c98a3a',m:'#8a4a24',c:'#3a2436',q:'#ffd23a',p:'#f28aa0',t:'#b07a44',v:'#8a4fd0',u:'#3fd0e0',T:'#2f6fe0',P:'#1b2a5e',C:'#e6ff00'};
+const PAL = {k:'#151515',e:'#151515',s:'#c68a5c',S:'#8f5a36',l:'#edc09a',h:'#2a1a12',w:'#f2f2f2',W:'#bdbdbd',x:'#7a7a7a',X:'#3a3a3a',y:'#e6ff00',r:'#e03a33',b:'#2f6fe0',n:'#1b2a5e',g:'#3fbf4f',o:'#f2c56b',O:'#c98a3a',m:'#8a4a24',c:'#3a2436',q:'#ffd23a',p:'#f28aa0',t:'#b07a44',v:'#8a4fd0',u:'#3fd0e0',T:'#2f6fe0',P:'#1b2a5e',C:'#e6ff00',R:'#9c1f1c',G:'#d8f0f0'};
 const M = h => h.length === 6 ? h + [...h].reverse().join('') : h;
 const BASE = ['...kkk','..khhh','.khhhh','.khsss','.kssss','.ksess','.kpsss','.ksssk','..ksss','...kkS','..kTTT','.kTTTT','kTTTTT','kTkTTT','kskTTT','.kkPPP','..kPPk','..kPPk','.kXXXk'];
 function grid(w, h) { const g = []; for (let y = 0; y < h; y++) g.push(Array(w).fill('.')); return g; }
@@ -212,6 +212,11 @@ function vehSpr(kind, col) {
   else { L=78;Hh=26;gb=24;g=grid(L,Hh);rectG(g,4,17,54,3,'X');for(let x=0;x<56;x++){const t=RO(22-x*12/55);rectG(g,x,t,1,3,'W');if(x%6===0)px(g,x,t,'y');}rectG(g,56,6,20,14,'C');rectG(g,66,8,8,5,'G');for(const x of [14,48,66])circ(g,x,21,3); }
   return { img: toCanvas(outline(g), pal), L, gb };
 }
+/* Portada: el rey del caballito con la botella de anis en alto. Un caracter por racha:
+   n = codigo - 35; n < 4*(colores) es el color n/4+1 con largo n%4+1, si no es transparente con largo n-4*(colores)+1. */
+function unrle(d) { const o = [], m = HK.length * 4 - 4; for (const c of d) { const n = c.charCodeAt() - 35; for (let l = n < m ? n % 4 : n - m; l >= 0; l--) o.push(HK[n < m ? n / 4 + 1 | 0 : 0]); } return o; }
+const HW = 63, HH = 69, HK = '.kqOwGurRXsSWxbn', HF = unrle("~~t(+~z(+~z-~z/37~z/37~z/37~y047~w067~v/637~v><?~v;2;?~v><?~vBA~i&#f/637~h#E&d/637~g#C/C&$bJHK7~f#D&&#aNM7d/O~#>>;%`JHK7cSOS{=&&JbJGKf#z=?&&&7bIKg#z?`;&%G&GaIKi#{<&%H%GaIKi#z<_&%GK1#`IKj#z?a&$HLG_JGKcM`%S~_%KIOJI#NNK&=~_/IKJG#NNM$`>/'}0JH#NNLd>0(|1I#NMi>/(+}2LPKm?=(,e<t20Po>,/Sa>;u2/Pl=?>;0>;@v2/Qh>>;A>@FFq20Pg/O><@_=@SD&$C#Dp2/Qe/O>=?a?TO/S$2&Do20P`ZW[>=?dSP/S0D1%Dn20PZY[W>;?eCSP/SO%CP%Co2/QZX[[>?eD#SP/SO%CP$Dn/X1PZX[[=?fC#0SP/SP#OCO%CnZZZX[[;@`CdC#/C#SO/T#S$P$Dn[[ZX[[Y[[?OSO_CdC#/CPSO/SOT#CS$Dn1^[[;Y[[VOCdC#/$PSO/O#S#CS$DlD#2/>Y[[VSCOcC#/$O#SQT#CS$DjD&$><Y[S_P_SCScC#/C#SR#UCS$DiC&$>>Y[SO/SODSc$OC#T$U$T$Dg<&;?>>?Y[SOTODSc$PVU$CS$Dg=$;?`>;A_Y[S_OC_CTd$OC&S$CT$De>=?a=@bY[VUCd%PC$S#CT%Ce><@_EA'+a/Y[VEf%UDU%De=A_E&C2/&%DOi&V&DfAaD$21Q&&Sk&&$Df;cC20RRO&$o&$Dm&RRVT~k&RVTC#D~jC&VSP'+C%C~jC$U#O$OTDO$D~iC#/C%QTC#CS$D~iC#/C%PTC$CS$D~iC#/CRTCUCS$D~iC#/C%OSCO%CS$D~i$OC%S$S%CS$D~i%OC$S$S$CS%D~j$OC#S&S#CS$D~k%OD&DS%D~l%TFT%D~n&V&D~p&&$D~r&&C~~~g");
+const HG = outline([...Array(HH)].map((_, y) => HF.slice(y * HW, y * HW + HW))), HERO = toCanvas(HG, PAL), HSIL = toCanvas(HG.map(r => r.map(k => k > '.' ? 'w' : k)), PAL);
 
 /* ---------- audio con osciladores ---------- */
 let AC = null, SCN = null, ENG = null;
@@ -659,7 +664,7 @@ function drawBless(S) {
   F('#aebcd8'); Q(x - 5, y + 4, 10, 1); Q(x - 3, y + 10, 1, 1); Q(x + 2, y + 10, 1, 1); Q(x - 2, y + 12, 4, 1); Q(x - 1, y + 16, 2, 8);
   X.globalAlpha = a; txt('DIOS TE BENDIGA, HIJO', x - 17, y + 12, '#fff3b0', 1, 'r'); X.globalAlpha = 1;
 }
-function drawRun(S, attract) {
+function drawRun(S) {
   const m = S.m, c = S.cam;
   X.save();
   if (S.shake > 0) X.translate(RO((Math.random() - .5) * 3), RO((Math.random() - .5) * 2));
@@ -711,12 +716,12 @@ function drawRun(S, attract) {
   if (m.casco) drawPickup('casco', 276, 12);
   if (m.inv > 0 && m.inv < 90) { drawPickup('estampita', 290, 12); F('#e6ff00'); Q(297, 6, RO(20 * m.inv / 5.5), 2); }
   else if (m.turbo > 0) { drawPickup('anis', 290, 12); F('#f2c56b'); Q(297, 6, RO(20 * m.turbo / 4), 2); }
-  else if (!attract) txt('DIA ' + S.day, 316, 4, '#8e8e88', 1, 'r', null);
+  else txt('DIA ' + S.day, 316, 4, '#8e8e88', 1, 'r', null);
 }
 
 /* ---------- pantallas ---------- */
 const DEF_RANK = [['ÑOM',9000],['ANI',7000],['CAB',5000],['PEJ',3000],['GUA',1500]].map(a => ({ n: a[0], s: a[1] }));
-let RANK = DEF_RANK.slice(), MODE = 'title', ATT = null, RUN = null, SEL = 0, MT = 0, NAME = null, NEWPOS = -1;
+let RANK = DEF_RANK.slice(), MODE = 'title', RUN = null, SEL = 0, MT = 0, NAME = null, NEWPOS = -1;
 const LETTERS = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
 function getStorage() {
   if (window.platanusArcadeStorage) return window.platanusArcadeStorage;
@@ -734,23 +739,42 @@ function fixRank(list) {
 function loadRank() { try { Promise.resolve(getStorage().get(SKEY)).then(r => { if (r && r.found) RANK = fixRank(r.value); }).catch(() => {}); } catch (e) {} }
 function saveRank() { try { Promise.resolve(getStorage().set(SKEY, RANK)).catch(() => {}); } catch (e) {} }
 
-function drawTitle() {
-  F('rgba(12,7,20,.7)'); Q(0, 12, W, H - 12);
-  txt('MOTO', 160, 22, '#e6ff00', 4, 'c'); txt('PIRUETAS', 160, 44, '#e6ff00', 4, 'c');
-  txt('HORA PICO EN LA FAJARDO', 160, 70, '#f28aa0', 1, 'c');
-  F('rgba(0,0,0,.7)'); Q(40, 84, 240, 108); F('#e6ff00'); Q(40, 84, 240, 1); Q(40, 191, 240, 1);
-  if (FL(MT / 6) % 2 === 0) {
-    txt('LOS MAS PIRUETEROS', 160, 92, '#e6ff00', 1, 'c', null);
-    RANK.forEach((e, i) => { const y = 108 + i * 15; txt((i + 1) + '.', 92, y, '#8e8e88', 2, 'l', null); txt(e.n, 116, y, '#f2f2f2', 2, 'l', null); txt(String(e.s).padStart(6, '0'), 228, y, '#e6ff00', 2, 'r', null); });
-  } else {
-    txt('CONTROLES', 160, 92, '#e6ff00', 1, 'c', null);
-    ['JOYSTICK ARRIBA / ABAJO: CARRIL', 'DERECHA: ACELERA   IZQUIERDA: FRENA', 'BOTON 1 (MANTENER): CABALLITO', 'BOTON 2: CORNETA', 'EN EL AIRE: IZQ / DER PARA GIRAR', 'CAE DERECHO O TE MATAS', 'OJO: EL GUAIRE, LOS HUECOS', 'Y LOS VENDEDORES DE LA COLA'].forEach((s, i) => txt(s, 160, 104 + i * 10, i > 5 ? '#f28aa0' : '#f2f2f2', 1, 'c', null));
+/* Titulo fijo: nombre en negro sobre franja amarilla, el heroe a la izquierda y el ranking con los controles a la derecha */
+/* Fondo del titulo y de la seleccion: degradado azul de #000628 (arriba) a #011469 (abajo), fila por fila */
+function bgBlue() {
+  for (let y = 0; y < H; y++) { const k = y / (H - 1); F('rgb(' + RO(k) + ',' + RO(6 + 14 * k) + ',' + RO(40 + 65 * k) + ')'); Q(0, y, W, 1); }
+  /* estrellas de noche: posiciones pseudoaleatorias fijas (hash con seno), tres brillos y unas pocas en cruz */
+  const hs = n => { const q = SN(n) * 43758.5453; return q - FL(q); };
+  for (let i = 0; i < 64; i++) {
+    const x = 1 + FL(hs(i * 12.99 + 1) * (W - 2)), y = 1 + FL(hs(i * 78.23 + 2) * (H - 2)), b = FL(hs(i * 3.7 + 3) * 9);
+    F(b > 7 ? '#ffffff' : b > 3 ? '#aab8ee' : '#5a6aa8'); Q(x, y, 1, 1); if (b > 7) { Q(x - 1, y, 3, 1); Q(x, y - 1, 1, 3); }
   }
+}
+function drawTitle() {
+  bgBlue();
+  F('#e6ff00'); Q(0, 6, W, 30); F('#9fb800'); Q(0, 36, W, 2);
+  txt('MOTOPIRUETAS', 160, 11, '#151515', 4, 'c', null);
+  txt('HORA PICO EN LA FAJARDO', 160, 42, '#eaf6ff', 2, 'c');
+  /* rayos fijos detras del heroe centrado a 2x: tonos brillantes del amarillo lima del titulo (#e6ff00): mas claro, puro y apenas mas oscuro, que giran (y hacia las puntas), con borde blanco de calcomania */
+  for (let i = 0; i < 16; i++) { for (let r = 4; r < 70; r += 2) { const a = i * .3927, k = (1 + Math.cos(a - MT * 1.5)) / 4 + r / 140, s = 1 + r / 9 | 0, u = RO(160 + Math.cos(a) * r), v = RO(127 + SN(a) * r), x = MXX(84, u), y = MXX(56, v), w = MN(236, u + s) - x, h = MN(198, v + s) - y; if (w > 0 && h > 0) { const lt = MXX(0, .5 - k), dk = 1 - MXX(0, k - .5) * .24; F('rgb(' + RO((230 + 25 * lt) * dk) + ',' + RO(255 * dk) + ',' + RO(255 * lt * dk) + ')'); Q(x, y, w, h); } } }
+  for (let i = 0; i < 4; i++) X.drawImage(HSIL, 97 + (i - 1) % 2 * 2, 58 + (i - 2) % 2 * 2, HW * 2, HH * 2);
+  X.drawImage(HERO, 97, 58, HW * 2, HH * 2);
+  /* controles a los lados del heroe: tecla en amarillo, accion en blanco */
+  [['WASD', 'MOVERSE', 48, 108], ['J', 'CABALLITO', 274, 90], ['K', 'CORNETA', 274, 128]].forEach(([k, a, x, y]) => { txt(k, x, y, '#e6ff00', 2, 'c', null); txt(a, x, y + 13, '#f2f2f2', 2, 'c', null); });
   if (FL(MT * 2.5) % 2 === 0) txt(pressTxt(), 160, 204, '#f2f2f2', 2, 'c');
-  txt('PLATANUS HACK 26 CARACAS', 160, 228, '#8e8e88', 1, 'c', null);
+  /* un platano cualquiera al lado de Platanus Hack */
+  F('#ffd23a'); Q(104, 229, 2, 1); Q(105, 230, 7, 1); Q(109, 229, 4, 1); Q(111, 228, 2, 1); Q(112, 227, 1, 1); F('#c98a3a'); Q(106, 231, 5, 1); F('#8a5530'); Q(113, 226, 1, 2); Q(104, 228, 1, 1);
+  txt('PLATANUS HACK 26 CARACAS', 118, 227, '#8e8e88', 1, 'l', null);
+}
+/* Antes de la partida: bandera de Venezuela (sin escudo, 8 estrellas en arco) y Platanus Hack sobre negro */
+function drawIntro() {
+  F('#ffd23a'); Q(112, 56, 96, 22); F('#1b4fa0'); Q(112, 78, 96, 22); F('#e03a33'); Q(112, 100, 96, 22);
+  F('#f2f2f2'); for (let i = 0; i < 8; i++) { const k = (i - 3.5) / 4, x = RO(160 + k * 36), y = RO(85 + k * k * 9); Q(x - 1, y, 3, 1); Q(x, y - 1, 1, 3); }
+  txt('PLATANUS HACK 2026', 160, 144, '#f2f2f2', 2, 'c');
+  txt('CARACAS', 160, 164, '#e6ff00', 3, 'c');
 }
 function drawSelect() {
-  F('#140c22'); Q(0, 0, W, H); F('#211833'); for (let y = 0; y < H; y += 6) Q(0, y, W, 1);
+  bgBlue();
   txt('ELIGE TU MOTORIZADO', 160, 14, '#e6ff00', 2, 'c');
   RIDERS.forEach((r, i) => { const x = 12 + i * 60, y = 40, on = i === SEL; F(on ? '#e6ff00' : '#2b2140'); Q(x, y, 56, 54); F('#1b1230'); Q(x + 2, y + 2, 52, 50); X.drawImage(r.img, x + 2, y + 6 - (on ? FL(MT * 4) % 2 : 0), 52, 42); });
   const r = RIDERS[SEL]; txt(r.name, 160, 106, '#f2f2f2', 2, 'c');
@@ -784,13 +808,14 @@ function drawRank() {
 function tick(dt) {
   MT += dt;
   if (MODE === 'title') {
-    if (!ATT || (ATT.crashAt != null && ATT.t > ATT.crashAt + 2.5) || (ATT.arrived && ATT.t > ATT.arrived + 3) || ATT.t > 90) ATT = newRun(FL(Math.random() * 5), true, 1, 0);
-    simStep(ATT, dt);
     if (I.pS() || I.pA()) { MODE = 'select'; MT = 0; unlockAudio(); SFX.pick(); }
   } else if (MODE === 'select') {
     if (I.pL()) { SEL = (SEL + 4) % 5; SFX.blip(); }
     if (I.pR()) { SEL = (SEL + 1) % 5; SFX.blip(); }
-    if ((I.pA() || I.pS()) && MT > .2) { RUN = newRun(SEL, false, 1, 0); MODE = 'play'; MT = 0; startEngine(); }
+    if ((I.pA() || I.pS()) && MT > .2) { MODE = 'intro'; MT = 0; }
+  } else if (MODE === 'intro') {
+    /* Platanus Hack: dura 2.5 s y se salta con START o boton 1 */
+    if (MT > 2.5 || ((I.pA() || I.pS()) && MT > .3)) { RUN = newRun(SEL, false, 1, 0); MODE = 'play'; MT = 0; startEngine(); }
   } else if (MODE === 'play') {
     simStep(RUN, dt);
     if (RUN.arrived && RUN.t > RUN.arrived + 3.2) { RUN = newRun(RUN.m.ri, false, RUN.day + 1, RUN.score); startEngine(); }
@@ -811,15 +836,15 @@ function tick(dt) {
       else { const n = NAME.l.map(k => LETTERS[k]).join(''), e = { n, s: RUN.score }; RANK = fixRank(RANK.concat([e])); NEWPOS = RANK.indexOf(RANK.find(r => r.n === n && r.s === RUN.score)); saveRank(); MODE = 'rank'; MT = 0; SFX.pick(); }
     }
   } else if (MODE === 'rank') {
-    /* La demo del titulo se crea ya: render() la dibuja en este mismo cuadro y con null el juego se congelaba. */
-    if (MT > 7 || ((I.pS() || I.pA()) && MT > .6)) { MODE = 'title'; MT = 0; ATT = newRun(FL(Math.random() * 5), true, 1, 0); }
+    if (MT > 7 || ((I.pS() || I.pA()) && MT > .6)) { MODE = 'title'; MT = 0; }
   }
 }
 function render() {
   X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1; F('#000'); Q(0, 0, W, H);
-  if (MODE === 'title') { drawRun(ATT, true); drawTitle(); }
+  if (MODE === 'title') drawTitle();
   else if (MODE === 'select') drawSelect();
-  else { drawRun(RUN, false); if (MODE === 'over') drawOver(RUN); else if (MODE === 'name') drawName(); else if (MODE === 'rank') drawRank(); }
+  else if (MODE === 'intro') drawIntro();
+  else { drawRun(RUN); if (MODE === 'over') drawOver(RUN); else if (MODE === 'name') drawName(); else if (MODE === 'rank') drawRank(); }
 }
 
 /* ---------- Phaser ---------- */
@@ -830,7 +855,6 @@ function create() {
   X = TEX.getContext(); X.imageSmoothingEnabled = false;
   this.add.image(0, 0, 'scr').setOrigin(0, 0).setScale(GAME_WIDTH / W);
   loadRank();
-  ATT = newRun(0, true, 1, 0);
   if (!TUI && window.matchMedia && window.matchMedia('(pointer: coarse)').matches) TUI = touchUI();
 }
 function syncTUI() { if (TUI) TUI.show(MODE !== 'play'); }
