@@ -193,7 +193,7 @@ function motoSpr(o, empty) {
 }
 function riderSpr(o) { const g = grid(11, 12); if (o.box) rectG(g,1,3,2,4,'B'); rectG(g,3,0,4,3,'H'); px(g,6,1,'n'); rectG(g,3,3,3,4,'T'); rectG(g,6,4,2,1,'T'); px(g,8,4,'s'); rectG(g,3,7,2,3,'P'); rectG(g,6,7,2,3,'P'); return toCanvas(outline(g), Object.assign({}, PAL, { B: '#ff3d8b' }, o.p || {})); }
 const RIDERS = [
-  {name:'DELIVERY ÑOMI',st:[5,3,2],sp:'PEDIDO CALIENTE: MAS PUNTOS POR DISTANCIA',o:{box:1,p:{C:'#3a3a3a',H:'#ff3d8b',T:'#ff3d8b',P:'#1b2a5e',s:'#b8794c'}}},
+  {name:'DELIVERY ÑOMI',st:[5,3,2],sp:'PEDIDO CALIENTE: MAS PUNTOS POR DISTANCIA',o:{box:1,p:{B:'#22a34a',C:'#3a3a3a',H:'#ff3d8b',T:'#ff3d8b',P:'#1b2a5e',s:'#b8794c'}}},
   {name:'LA MOTOTAXISTA',st:[3,5,3],sp:'CAMBIA DE CARRIL MAS RAPIDO',o:{vest:1,p:{C:'#2f6fe0',H:'#e6ff00',T:'#c8e000',P:'#3a3a3a',s:'#8f5a36'}}},
   {name:'REY DEL CABALLITO',st:[2,3,5],sp:'AGUANTA EL CABALLITO ETERNO',o:{band:1,p:{C:'#e03a33',H:'#151515',T:'#f2f2f2',P:'#2f6fe0',s:'#c68a5c'}}},
   {name:'LA INFLUENCER',st:[3,2,3],sp:'EN VIVO: LAS PIRUETAS VALEN DOBLE',o:{stick:1,p:{C:'#8a4fd0',H:'#f28aa0',T:'#f28aa0',P:'#f2f2f2',s:'#e8b48a'}}},
@@ -597,7 +597,7 @@ function drawBoards(S) {
       F('#3e3656');Q(bx+10,34+o,48,38);F('#4e4668');Q(bx+10,34+o,48,2);
       F('#ffd23a');for(let yy=40+o;yy<68+o;yy+=9)for(let xx=bx+14;xx<bx+56;xx+=10)if(!(yy===40+o&&xx===bx+34))Q(xx,yy,6,6);
       F('#3a2a24');Q(bx+34,40+o,6,6);F('#8f5a36');Q(bx+35,41+o,4,4);F('#1a0f08');Q(bx+35,40+o,4,2);F('#f28aa0');Q(bx+33,45+o,8,2);
-      if (bx > -40 && bx < 260) { bubble(clamp(bx + 37, 70, 250), 18 + o, 'MAMA, SE METIO OTRO PEJELAGARTO!'); F('#fff');Q(bx+36,29+o,2,9);F('#151515');Q(bx+35,29+o,1,9);Q(bx+38,29+o,1,9); }
+      if (bx > -40 && bx < 260) { bubble(clamp(bx + 37, 70, 250), 18 + o, 'MAMA, SE METIO CAPRILES!'); F('#fff');Q(bx+36,29+o,2,9);F('#151515');Q(bx+35,29+o,1,9);Q(bx+38,29+o,1,9); }
       continue;
     }
     if (it[1] === 'hielo') { F('#e8d9b0');Q(bx,40+o,60,32);F('#c9b88c');Q(bx,40+o,60,2);F('#6b8aa8');Q(bx+44,48+o,10,10);F('#8a5530');Q(bx+45,60+o,8,12);txt('SE VENDE',bx+22,46+o,'#c62828',1,'c',null);txt('HIELO',bx+22,54+o,'#2f6fe0',2,'c',null); continue; }

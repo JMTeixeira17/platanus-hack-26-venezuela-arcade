@@ -6,7 +6,7 @@ src = src.slice(0, src.indexOf('new Phaser.Game('));
 src = 'const TXT = [];\n' + src.replace("function txt(s, x, y, col, sc = 1, al = 'l', sh = '#000') {", "function txt(s, x, y, col, sc = 1, al = 'l', sh = '#000') { TXT.push([String(s), sc, x, y]);");
 global.window = { addEventListener() {} };
 global.document = { createElement: () => ({ getContext: () => ({ set fillStyle(v) {}, fillRect() {} }) }) };
-const G = new Function(src + '\nreturn { newRun, simStep, drawRun, GY, STEP, vehSpr, held, pressed, tw, W, MX, FONT, setAC: a => { AC = a; }, setX: c => { X = c; }, tick, render, getMode: () => MODE, setMode: md => { MODE = md; MT = 0; }, TXT, H, TRIP, drawOver, setMT: t => { MT = t; }, setRun: r => { RUN = r; }, setSel: i => { SEL = i; }, get CHAMA() { return CHAMA; }, TRAMOS, ENDS, crash, spawnCola, occ };')();
+const G = new Function(src + '\nreturn { newRun, RIDERS, simStep, drawRun, GY, STEP, vehSpr, held, pressed, tw, W, MX, FONT, setAC: a => { AC = a; }, setX: c => { X = c; }, tick, render, getMode: () => MODE, setMode: md => { MODE = md; MT = 0; }, TXT, H, TRIP, drawOver, setMT: t => { MT = t; }, setRun: r => { RUN = r; }, setSel: i => { SEL = i; }, get CHAMA() { return CHAMA; }, TRAMOS, ENDS, crash, spawnCola, occ };')();
 
 function release() { for (const k in G.held) G.held[k] = false; for (const k in G.pressed) G.pressed[k] = false; }
 function scene(pos, v = 0) {
@@ -309,6 +309,13 @@ const cases = [
     step(S, 3); return !S.pick[0].got && S.score - sc < 300;
   }],
   ['the same pickup is collected on the ground', () => { const S = scene(2, 50); S.pick = [{ kind: 'empanada', pos: 2, x: S.m.x }]; step(S); return S.pick[0].got === true; }],
+  ['Delivery Nomi carries a green backpack (the NOMI RAID green), not pink', () => {
+    const r = G.RIDERS.find(q => q.name === 'DELIVERY \u00d1OMI'); return !!r && r.o.box === 1 && r.o.p.B === '#22a34a';
+  }],
+  ['the building bubble says MAMA, SE METIO CAPRILES! and no pejelagarto is left', () => {
+    const src = fs.readFileSync(require('path').join(__dirname, '..', 'game.js'), 'utf8');
+    return src.includes("'MAMA, SE METIO CAPRILES!'") && !/PEJELAGARTO/i.test(src);
+  }],
 ];
 let fail = 0;
 for (let [name, fn] of cases) { let ok; try { ok = fn(); } catch (e) { ok = false; name += '  [' + e.message + ']'; } if (!ok) fail++; console.log((ok ? 'PASS ' : 'FAIL ') + name); }
