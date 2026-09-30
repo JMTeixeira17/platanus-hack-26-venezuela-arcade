@@ -1,7 +1,7 @@
 // Builds cover.png (800x600) for the arcade gallery from the game's own pixel art.
 // Loads game.js (without starting Phaser) in headless Google Chrome over the DevTools protocol,
 // composes the scene at 400x300 with the game's sprites and font, scales it 2x without smoothing
-// and saves the PNG. No npm dependencies.
+// and saves it as an opaque 8-bit RGB PNG (no alpha channel). No npm dependencies.
 //
 //   node tools/make-cover.mjs            (needs Google Chrome installed)
 //   CHROME=/path/to/chrome node tools/make-cover.mjs
@@ -9,6 +9,7 @@
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { crc32, deflateSync } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -114,7 +115,25 @@ function compose(src) {
 
   const out = document.createElement('canvas'); out.width = 800; out.height = 600;
   const o = out.getContext('2d'); o.imageSmoothingEnabled = false; o.drawImage(L, 0, 0, 800, 600);
-  return out.toDataURL('image/png');
+  // Raw RGBA pixels as base64; Node writes the PNG itself so it can drop the alpha channel.
+  const px = o.getImageData(0, 0, 800, 600).data; let bin = '';
+  for (let i = 0; i < px.length; i += 0x8000) bin += String.fromCharCode.apply(null, px.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+/* The arcade release API failed to process Chrome's RGBA PNG ("Failed to process cover.png"),
+   while the kit's own cover has no alpha. The cover is fully opaque, so write plain RGB (colour type 2). */
+function encodeRgbPng(rgba, w, h) {
+  if (rgba.length !== w * h * 4) throw new Error(`expected ${w * h * 4} RGBA bytes, got ${rgba.length}`);
+  for (let i = 3; i < rgba.length; i += 4) if (rgba[i] !== 255) throw new Error('cover has transparent pixels; refusing to drop alpha');
+  const row = 1 + w * 3, raw = Buffer.alloc(h * row);
+  for (let y = 0; y < h; y++) {
+    raw[y * row] = 1; // Sub filter: each byte minus the same channel of the pixel to its left
+    for (let x = 0; x < w * 3; x++) { const p = (y * w + (x / 3 | 0)) * 4 + x % 3; raw[y * row + 1 + x] = (rgba[p] - (x >= 3 ? rgba[p - 4] : 0)) & 255; }
+  }
+  const chunk = (type, data) => { const td = Buffer.concat([Buffer.from(type, 'latin1'), data]), b = Buffer.alloc(8 + data.length + 4); b.writeUInt32BE(data.length, 0); td.copy(b, 4); b.writeUInt32BE(crc32(td) >>> 0, 8 + data.length); return b; };
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 2;
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw, { level: 9 })), chunk('IEND', Buffer.alloc(0))]);
 }
 
 async function main() {
@@ -143,7 +162,7 @@ async function main() {
     const send = (method, params = {}) => new Promise((res, rej) => { const i = ++id; pending.set(i, { res, rej }); ws.send(JSON.stringify({ id: i, method, params })); });
     const r = await send('Runtime.evaluate', { expression: `(${compose.toString()})(${JSON.stringify(src)})`, returnByValue: true });
     if (r.exceptionDetails) throw new Error('page error: ' + (r.exceptionDetails.exception?.description || r.exceptionDetails.text));
-    const png = Buffer.from(String(r.result.value).replace(/^data:image\/png;base64,/, ''), 'base64');
+    const png = encodeRgbPng(Buffer.from(String(r.result.value), 'base64'), 800, 600);
     const w = png.readUInt32BE(16), h = png.readUInt32BE(20);
     if (png.readUInt32BE(0) !== 0x89504e47 || w !== 800 || h !== 600) throw new Error(`unexpected PNG ${w}x${h}`);
     if (png.length > 500 * 1024) throw new Error(`cover too big: ${png.length} bytes`);
