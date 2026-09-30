@@ -75,9 +75,9 @@ const cases = [
     const glyphs = log.map((e, i) => [e, i]).filter(([e]) => e.k === 'r' && e.w === 4 && e.h === 4 && e.c === '#151515');
     return glyphs.length > 100 && glyphs.every(([e, i]) => i > bi && e.y >= b.y && e.y + e.h <= b.y + b.h);
   }],
-  ['HORA PICO EN LA FAJARDO is written in ice white just below the band', () => {
+  ['EL MOTORIZADO ENAMORADO is written in ice white just below the band', () => {
     const log = paintTitle(ON), b = log.find(e => e.k === 'r' && e.c === '#e6ff00' && e.w >= G.W && e.h >= 24), sub = log.filter(e => e.k === 'r' && e.c === '#eaf6ff' && e.y < 60);
-    return texts().includes('HORA PICO EN LA FAJARDO') && sub.length > 30 && sub.every(e => e.y >= b.y + b.h && e.y < b.y + b.h + 16);
+    return texts().includes('EL MOTORIZADO ENAMORADO') && !texts().includes('HORA PICO EN LA FAJARDO') && sub.length > 30 && sub.every(e => e.y >= b.y + b.h && e.y < b.y + b.h + 16);
   }],
   ['hero and controls are on the same screen, and there is no ranking on the title', () => {
     const log = paintTitle(ON), t = texts(), hero = log.filter(e => e.k === 'i' && e.img === G.hero.img);
@@ -133,7 +133,7 @@ const cases = [
     return true;
   }],
   /* ---------- name ---------- */
-  ['metadata.json names the game "Moto Piruetas: Hora Pico en la Fajardo"', () => require('../metadata.json').game_name === 'Moto Piruetas: Hora Pico en la Fajardo'],
+  ['metadata.json names the game "Moto Piruetas: El Motorizado Enamorado"', () => require('../metadata.json').game_name === 'Moto Piruetas: El Motorizado Enamorado'],
   /* ---------- PLATANUS HACK 2026 intro ---------- */
   ['confirming a rider goes to the intro first, not straight to the match', () => { toIntro(); return G.getMode() === 'intro' && G.getRun() === null; }],
   ['intro: black screen with PLATANUS HACK 2026, CARACAS and the Venezuelan flag', () => {

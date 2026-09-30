@@ -1,4 +1,4 @@
-/* Moto Piruetas: hora pico en la Fajardo.
+/* Moto Piruetas: el motorizado enamorado.
    Platanus Hack 26 Caracas. Todo dibujado y sonado con codigo.
    Phaser 3 maneja el loop, la escala y el audio; el juego se pinta en un
    CanvasTexture de 320x240 que se escala x2.5 con pixelArt. */
@@ -748,7 +748,7 @@ function drawTitle() {
   bgBlue();
   F('#e6ff00'); Q(0, 6, W, 30); F('#9fb800'); Q(0, 36, W, 2);
   txt('MOTOPIRUETAS', 160, 11, '#151515', 4, 'c', null);
-  txt('HORA PICO EN LA FAJARDO', 160, 42, '#eaf6ff', 2, 'c');
+  txt('EL MOTORIZADO ENAMORADO', 160, 42, '#eaf6ff', 2, 'c');
   /* rayos fijos detras del heroe centrado a 2x: tonos brillantes del amarillo lima del titulo (#e6ff00): mas claro, puro y apenas mas oscuro, que giran (y hacia las puntas), con borde blanco de calcomania */
   for (let i = 0; i < 16; i++) { for (let r = 4; r < 70; r += 2) { const a = i * .3927, k = (1 + Math.cos(a - MT * 1.5)) / 4 + r / 140, s = 1 + r / 9 | 0, u = RO(160 + Math.cos(a) * r), v = RO(127 + SN(a) * r), x = MXX(84, u), y = MXX(56, v), w = MN(236, u + s) - x, h = MN(198, v + s) - y; if (w > 0 && h > 0) { const lt = MXX(0, .5 - k), dk = 1 - MXX(0, k - .5) * .24; F('rgb(' + RO((230 + 25 * lt) * dk) + ',' + RO(255 * dk) + ',' + RO(255 * lt * dk) + ')'); Q(x, y, w, h); } } }
   for (let i = 0; i < 4; i++) X.drawImage(HSIL, 97 + (i - 1) % 2 * 2, 58 + (i - 2) % 2 * 2, HW * 2, HH * 2);

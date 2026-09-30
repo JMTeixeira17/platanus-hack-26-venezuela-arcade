@@ -1,4 +1,4 @@
-# Moto Piruetas: Hora Pico en la Fajardo
+# Moto Piruetas: El Motorizado Enamorado
 
 Juego para el Arcade Challenge de Platanus Hack 26 Caracas. Un jugador, Phaser 3, todo dibujado y sonado con código.
 

@@ -73,7 +73,7 @@ function compose(src) {
   F('#4a4d52'); Q(0, 285, LW, 3); F('#6e6446'); Q(0, 288, LW, 12); F('#5a5034'); Q(0, 294, LW, 6);
 
   // --- light rays from the hero (per pixel, so edges stay crisp)
-  const HX = 72, HY = 280 - 57 * 3, CX = HX + 30 * 3, CY = HY + 26 * 3, img = c.getImageData(0, 0, LW, LH), d = img.data;
+  const HX = 72, HY = 280 - (G.HH - 2) * 3, CX = HX + Math.round(G.HW / 2) * 3, CY = HY + Math.round(G.HH * .45) * 3, img = c.getImageData(0, 0, LW, LH), d = img.data;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
     const a = Math.atan2(y - CY, x - CX), k = ((a / (Math.PI * 2) * 18) % 1 + 1) % 1, r = Math.hypot(x - CX, y - CY);
     if (k < .42 && r > 20) { const t = Math.min(.34, .12 + r / 900) * (y < 170 ? 1 : .55), i = (y * LW + x) * 4; d[i] += (255 - d[i]) * t; d[i + 1] += (236 - d[i + 1]) * t; d[i + 2] += (140 - d[i + 2]) * t; }
@@ -110,7 +110,7 @@ function compose(src) {
     txt(s, x, y + 1, bev, sc, 'c', null); txt(s, x, y, col, sc, 'c', null);
   };
   title('MOTO PIRUETAS', 10, 7, '#e6ff00', '#9fb800', 2);
-  title('HORA PICO EN LA FAJARDO', 54, 3, '#f28aa0', '#c0587a', 1);
+  title('EL MOTORIZADO ENAMORADO', 54, 3, '#f28aa0', '#c0587a', 1);
 
   const out = document.createElement('canvas'); out.width = 800; out.height = 600;
   const o = out.getContext('2d'); o.imageSmoothingEnabled = false; o.drawImage(L, 0, 0, 800, 600);
