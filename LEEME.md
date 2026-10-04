@@ -19,10 +19,11 @@ Abre `localhost:3001`. El panel de desarrollo muestra el juego y revisa las rest
 
 ## Enviarlo
 
-1. Haz fork de `platanus-hack/platanus-hack-26-venezuela-arcade` en GitHub.
-2. Reemplaza `game.js`, `metadata.json` y `cover.png` con los de esta carpeta.
-3. Haz commit y push.
-4. Usa el botón **Submit** del panel de desarrollo.
+Este repo ya es el fork de `platanus-hack/platanus-hack-26-venezuela-arcade`.
+
+1. Haz commit de todo y corre `npm run dev`.
+2. En `localhost:3001`, usa el botón **Submit** del panel: graba 10 segundos de juego como vista previa, crea el commit "Arcade release vN", le pone el tag `vN`, lo sube y registra la versión en Platanus.
+3. Para reenviar, el último commit no puede tener ya un tag `vN`: haz un commit nuevo antes.
 
 Fecha límite: 21 de octubre de 2026, 23:59 hora de Caracas.
 
